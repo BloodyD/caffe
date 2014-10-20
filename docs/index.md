@@ -17,9 +17,14 @@ Check out our web image classification [demo](http://demo.caffe.berkeleyvision.o
 Models and optimization are defined by configuration without hard-coding.
 Switch between CPU and GPU by setting a single flag to train on a GPU machine then deploy to commodity clusters or mobile devices.
 
+<<<<<<< HEAD
 **Extensible code** fosters active development.
 In Caffe's first year, it has been forked by over 1,000 developers and had many significant changes contributed back.
 Thanks to these contributors the framework tracks the state-of-the-art in both code and models.
+=======
+**Readable & modifiable implementation** fosters active development.
+In Caffe's first year, it has been forked by over 600 developers on Github, and many have pushed significant changes.
+>>>>>>> [docs] re-title docs, count forks
 
 **Speed** makes Caffe perfect for research experiments and industry deployment.
 Caffe can process **over 60M images per day** with a single NVIDIA K40 GPU\*.
