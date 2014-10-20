@@ -81,12 +81,13 @@ Citations are also tracked automatically by [Google Scholar](http://scholar.goog
 
 ## Contacting Us
 
-Join the [caffe-users group](https://groups.google.com/forum/#!forum/caffe-users) to ask questions and discuss methods and models. This is where we talk about usage, installation, and applications.
+Yangqing would like to thank the NVIDIA Academic program for providing GPUs, [Oriol Vinyals](http://www1.icsi.berkeley.edu/~vinyals/) for discussions along the journey, and BVLC PI [Trevor Darrell](http://www.eecs.berkeley.edu/~trevor/) for guidance.
 
-Framework development discussions and thorough bug reports are collected on [Issues](https://github.com/BVLC/caffe/issues).
+A core set of BVLC members have contributed much new functionality and many fixes since the original release (alphabetical by first name):
+[Eric Tzeng](https://github.com/erictzeng), [Evan Shelhamer](http://imaginarynumber.net/), [Jeff Donahue](http://jeffdonahue.com/), [Jon Long](https://github.com/longjon), [Ross Girshick](http://www.cs.berkeley.edu/~rbg/), [Sergey Karayev](http://sergeykarayev.com/), [Sergio Guadarrama](http://www.eecs.berkeley.edu/~sguada/).
 
-Contact [caffe-dev](mailto:caffe-dev@googlegroups.com) if you have a confidential proposal for the framework *and the ability to act on it*.
-Requests for features, explanations, or personal help will be ignored; post to [caffe-users](https://groups.google.com/forum/#!forum/caffe-users) instead.
+Additionally, the open-source community plays a large and growing role in Caffe's development.
+Check out the Github [project pulse](https://github.com/BVLC/caffe/pulse) for recent activity, and the [contributors](https://github.com/BVLC/caffe/graphs/contributors) for a sorted list.
 
 The core Caffe developers offer [consulting services](mailto:caffe-coldpress@googlegroups.com) for appropriate projects.
 
