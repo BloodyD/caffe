@@ -628,6 +628,7 @@ message PoolingParameter {
     MAX = 0;
     AVE = 1;
     STOCHASTIC = 2;
+    MAXOUT = 3;
   }
   optional PoolMethod pool = 1 [default = MAX]; // The pooling method
   // Pad, kernel size, and stride are all given as a single value for equal
@@ -641,6 +642,7 @@ message PoolingParameter {
   optional uint32 stride = 3 [default = 1]; // The stride (equal in Y, X)
   optional uint32 stride_h = 7; // The stride height
   optional uint32 stride_w = 8; // The stride width
+  optional uint32 group_size = 13; // the size of the maxout groups
   enum Engine {
     DEFAULT = 0;
     CAFFE = 1;

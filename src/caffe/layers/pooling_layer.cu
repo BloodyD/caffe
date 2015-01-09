@@ -2,6 +2,7 @@
 #include <cfloat>
 #include <vector>
 
+
 #include "caffe/layer.hpp"
 #include "caffe/util/math_functions.hpp"
 #include "caffe/vision_layers.hpp"
@@ -202,6 +203,22 @@ void PoolingLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
           kernel_w_, stride_h_, stride_w_, top_data);
     }
     break;
+<<<<<<< HEAD
+=======
+  case PoolingParameter_PoolMethod_MAXOUT:
+    if (use_top_mask) {
+      top_mask = top[1]->mutable_gpu_data();
+    } else {
+      mask = max_idx_.mutable_gpu_data();
+    }
+    caffe_gpu_set(count, Dtype(-FLT_MAX), top_data);
+    // NOLINT_NEXT_LINE(whitespace/operators)
+    MaxoutPoolForward<Dtype><<<CAFFE_GET_BLOCKS(count),
+                                    CAFFE_CUDA_NUM_THREADS>>>(
+      count, bottom_data, bottom[0]->num(), channels_,
+              height_, width_, group_size, top_data, mask, top_mask);
+    break;
+>>>>>>> 8da63d7... fixed linter errors
   default:
     LOG(FATAL) << "Unknown pooling method.";
   }
