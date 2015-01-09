@@ -366,6 +366,66 @@ class PoolingLayerTest : public MultiDeviceTest<TypeParam> {
       }
     }
   }
+
+  void performMaxoutForwardPass(const int group_size = 2, const int channels = 4) {
+    LayerParameter layer_param;
+    PoolingParameter* pooling_param = layer_param.mutable_pooling_param();
+    pooling_param->set_kernel_size(1);
+    pooling_param->set_group_size(group_size);
+    pooling_param->set_pool(PoolingParameter_PoolMethod_MAXOUT);
+    const int num = 2;
+    blob_bottom_->Reshape(num, channels, 3, 5);
+    // Input: 2x channels channels of:
+    //     [c c c c c]
+    //     [c c c c c] --> where c = channel number
+    //     [c c c c c]
+    for (int i = 0; i < 15 * num * channels; i += 15) {
+      for (int j = i; j < i + 15; ++j) {
+        blob_bottom_->mutable_cpu_data()[j] = i / 15;
+      }
+    }
+    PoolingLayer<Dtype> layer(layer_param);
+    layer.SetUp(blob_bottom_vec_, blob_top_vec_);
+    EXPECT_EQ(blob_top_->num(), num);
+    EXPECT_EQ(blob_top_->channels(), channels / group_size);
+    EXPECT_EQ(blob_top_->height(), 3);
+    EXPECT_EQ(blob_top_->width(), 5);
+    if (blob_top_vec_.size() > 1) {
+      EXPECT_EQ(blob_top_mask_->num(), num);
+      EXPECT_EQ(blob_top_mask_->channels(), channels / group_size);
+      EXPECT_EQ(blob_top_mask_->height(), 3);
+      EXPECT_EQ(blob_top_mask_->width(), 5);
+    }
+    layer.Forward(blob_bottom_vec_, blob_top_vec_);
+    // Expected output: e.g. 2 x 2 channels of:
+    //     [1 1 1 1 1] and [3 3 3 3 3]
+    //     [1 1 1 1 1]     [3 3 3 3 3]
+    //     [1 1 1 1 1]     [3 3 3 3 3]
+    for (int i = 0, k = (channels - group_size -1); i < 15 * num * (channels / group_size); i += 30, k += channels) {
+      for (int j = i; j < i + 15; j++) {
+        EXPECT_EQ(blob_top_->cpu_data()[j], k);
+      }
+      for (int j = i + 15; j < i + 30; ++j) {
+        EXPECT_EQ(blob_top_->cpu_data()[j], k + group_size);
+      }
+    }
+  }
+
+
+  void TestGradientMaxOut() {
+    LayerParameter layer_param;
+    PoolingParameter* pooling_param = layer_param.mutable_pooling_param();
+    pooling_param->set_kernel_size(1);
+    pooling_param->set_group_size(2);
+    pooling_param->set_pool(PoolingParameter_PoolMethod_MAXOUT);
+    const int num = 2;
+    const int channels = 4;
+    blob_bottom_->Reshape(num, channels, 3, 5);
+    PoolingLayer<Dtype> layer(layer_param);
+    GradientChecker<Dtype> checker(1e-4, 1e-2);
+    checker.CheckGradientExhaustive(&layer, this->blob_bottom_vec_,
+            this->blob_top_vec_);
+  }
 };
 
 TYPED_TEST_CASE(PoolingLayerTest, TestDtypesAndDevices);
@@ -451,6 +511,15 @@ TYPED_TEST(PoolingLayerTest, TestForwardMaxTopMask) {
   this->TestForwardSquare();
   this->TestForwardRectHigh();
   this->TestForwardRectWide();
+}
+
+TYPED_TEST(PoolingLayerTest, TestForwardMaxout) {
+  this->performMaxoutForwardPass();
+  this->performMaxoutForwardPass(4, 8);
+}
+
+TYPED_TEST(PoolingLayerTest, TestGradientMaxout) {
+    this->TestGradientMaxOut();
 }
 
 TYPED_TEST(PoolingLayerTest, TestGradientMax) {
