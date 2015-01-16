@@ -367,7 +367,8 @@ class PoolingLayerTest : public MultiDeviceTest<TypeParam> {
     }
   }
 
-  void performMaxoutForwardPass(const int group_size = 2, const int channels = 4) {
+  void performMaxoutForwardPass(const int group_size = 2,
+          const int channels = 4) {
     LayerParameter layer_param;
     PoolingParameter* pooling_param = layer_param.mutable_pooling_param();
     pooling_param->set_kernel_size(1);
@@ -401,7 +402,9 @@ class PoolingLayerTest : public MultiDeviceTest<TypeParam> {
     //     [1 1 1 1 1] and [3 3 3 3 3]
     //     [1 1 1 1 1]     [3 3 3 3 3]
     //     [1 1 1 1 1]     [3 3 3 3 3]
-    for (int i = 0, k = (channels - group_size -1); i < 15 * num * (channels / group_size); i += 30, k += channels) {
+    for (int i = 0, k = (channels - group_size -1);
+         i < 15 * num * (channels / group_size);
+         i += 30, k += channels) {
       for (int j = i; j < i + 15; j++) {
         EXPECT_EQ(blob_top_->cpu_data()[j], k);
       }

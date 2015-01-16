@@ -76,7 +76,8 @@ void PoolingLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
     CHECK_LT(pad_h_, kernel_h_);
     CHECK_LT(pad_w_, kernel_w_);
   }
-  if (this->layer_param_.pooling_param().pool() == PoolingParameter_PoolMethod_MAXOUT) {
+  if (this->layer_param_.pooling_param().pool()
+          == PoolingParameter_PoolMethod_MAXOUT) {
     CHECK(pool_param.has_group_size()) << "Maxout Pooling needs a group size";
     group_size = pool_param.group_size();
   }
@@ -97,10 +98,10 @@ void PoolingLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   int output_channels_ = channels_;
   if (this->layer_param_.pooling_param().pool() ==
           PoolingParameter_PoolMethod_MAXOUT) {
-
     pooled_height_ = height_;
     pooled_width_ = width_;
-    CHECK((channels_ > 0) && (channels_ % group_size == 0)) << "Group size must be a divisor of the number of channels";
+    CHECK((channels_ > 0) && (channels_ % group_size == 0))
+            << "Group size must be a divisor of the number of channels";
     output_channels_ = static_cast<int>(channels_ / group_size);
   } else {
     pooled_height_ = static_cast<int>(ceil(static_cast<float>(
@@ -256,12 +257,19 @@ void PoolingLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
           for (int c = 0; c < channels_; c = c + group_size) {
             const Dtype* bottom_data_offset = bottom[0]->cpu_data();
             for (int g = 0; g < group_size; ++g) {
-              const Dtype* compare_offset = bottom_data_offset + bottom[0]->offset(n, c + g, h, w);
-              int top_data_offset = top[0]->offset(n, static_cast<int const>(floor(c / group_size)), h, w);
+              const Dtype* compare_offset = bottom_data_offset +
+                      bottom[0]->offset(n, c + g, h, w);
+              int top_data_offset =
+                  top[0]->offset(
+                      n,
+                      static_cast<int const>(floor(c / group_size)),
+                      h,
+                      w);
               if (top_data[top_data_offset] < compare_offset[0]) {
                 top_data[top_data_offset] = compare_offset[0];
                 if (use_top_mask) {
-                  top_mask[top_data_offset] = static_cast<Dtype>(bottom[0]->offset(n, c + g, h, w));
+                  top_mask[top_data_offset] =
+                      static_cast<Dtype>(bottom[0]->offset(n, c + g, h, w));
                 } else {
                   mask[top_data_offset] = bottom[0]->offset(n, c + g, h, w);
                 }
@@ -365,7 +373,9 @@ void PoolingLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
           for (int c = 0; c < static_cast<int>(channels_ / group_size); ++c) {
             const int top_data_offset = top[0]->offset(n, c, ph, pw);
             const int bottom_index =
-                    use_top_mask ? top_mask[top_data_offset] : mask[top_data_offset];
+                    use_top_mask ?
+                          top_mask[top_data_offset]
+                        : mask[top_data_offset];
             bottom_diff[bottom_index] += top_diff[top_data_offset];
           }
         }
