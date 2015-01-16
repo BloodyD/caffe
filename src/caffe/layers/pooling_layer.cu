@@ -1,6 +1,8 @@
 #include <algorithm>
 #include <cfloat>
 #include <vector>
+#include <tclDecls.h>
+#include <gdfx.h>
 
 #include "caffe/layer.hpp"
 #include "caffe/util/math_functions.hpp"
@@ -149,6 +151,38 @@ __global__ void StoPoolForwardTest(const int nthreads,
   }
 }
 
+template <typename Dtype>
+__global__ void MaxoutPoolForward(const int nthreads, const Dtype* bottom_data,
+        const int num, const int channels, const int height,
+        const int width, int group_size, Dtype* top_data,
+        int* mask, Dtype* top_mask) {
+    CUDA_KERNEL_LOOP(index, nthreads) {
+
+        // get all current values
+        int w = index % width;
+        int h = (index / width) % height;
+        int c = (index / width / height) % channels;
+        int n = index / width / height / channels;
+
+        // initialise everything for comparing
+        int top_data_offset = ((n * channels + (c / group_size)) * height + h) * width + w;
+
+        // do the maxout pooling
+        for (int g = 0; g < group_size; ++g) {
+            int bottom_data_offset = ((n * channels + (c + g)) * height + h) * width + w;
+            if (top_data[top_data_offset] < bottom_data[bottom_data_offset]) {
+                top_data[top_data_offset] = bottom_data[bottom_data_offset];
+                if (mask) {
+                    mask[top_data_offset] = bottom_data_offset;
+                } else {
+                    top_mask[top_data_offset] = bottom_data_offset;
+                }
+
+            }
+        }
+    }
+}
+
 
 template <typename Dtype>
 void PoolingLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
@@ -201,6 +235,19 @@ void PoolingLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
           height_, width_, pooled_height_, pooled_width_, kernel_h_,
           kernel_w_, stride_h_, stride_w_, top_data);
     }
+    break;
+  case PoolingParameter_PoolMethod_MAXOUT:
+    // NOLINT_NEXT_LINE(whitespace/operators)
+    if (use_top_mask) {
+      top_mask = top[1]->mutable_gpu_data();
+    } else {
+      mask = max_idx_.mutable_gpu_data();
+    }
+    caffe_set(top_count, Dtype(-FLT_MAX), top_data);
+    MaxoutPoolForward<Dtype><<<CAFFE_GET_BLOCKS(count),
+                                    CAFFE_CUDA_NUM_THREADS>>>(
+      count, bottom_data, bottom[0]->num(), channels_,
+              height_, width_, group_size, top_data, mask, top_mask);
     break;
   default:
     LOG(FATAL) << "Unknown pooling method.";
@@ -322,6 +369,25 @@ __global__ void StoPoolBackward(const int nthreads,
   }
 }
 
+template <typename Dtype>
+__global__ void MaxoutPoolBackward(const int nthreads, const Dtype* top_diff,
+        const int* mask, const Dtype* top_mask, const int num, const int channels,
+        const int height, const int width, Dtype* bottom_diff) {
+    CUDA_KERNEL_LOOP(index, nthreads) {
+
+        // get the current point we are looking at
+        int w = index % width;
+        int h = (index / width) % height;
+        int c = (index / width / height) % channels;
+        int n = index / width / height / channels;
+
+        // do the backward compute
+        int top_diff_offset = ((n * channels + c) * height + h) * width + w;
+        int bottom_offset = mask ? top_mask[top_diff_offset] : mask[top_diff_offset];
+        bottom_diff[bottom_offset] = top_diff[top_diff_offset];
+    }
+}
+
 
 template <typename Dtype>
 void PoolingLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
@@ -365,6 +431,18 @@ void PoolingLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
         top[0]->num(), channels_, height_, width_, pooled_height_,
         pooled_width_, kernel_h_, kernel_w_, stride_h_, stride_w_,
         bottom_diff);
+    break;
+  case PoolingParameter_PoolMethod_MAXOUT:
+    if (use_top_mask) {
+        top_mask = top[1]->gpu_data();
+    } else {
+        mask = max_idx_.gpu_data();
+    }
+    caffe_set(bottom_diff[0]->count(), Dtype(0), bottom_diff);
+    // NOLINT_NEXT_LINE(whitespace/operators)
+    MaxoutPoolBackward<Dtype><<<CAFFE_GET_BLOCKS(count), CAFFE_CUDA_NUM_THREADS>>>(
+        count, top_diff, mask, top_mask, top[0]->num(), channels_,
+        height_, width_, bottom_diff);
     break;
   default:
     LOG(FATAL) << "Unknown pooling method.";
