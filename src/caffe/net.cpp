@@ -13,6 +13,7 @@
 #include "caffe/util/io.hpp"
 #include "caffe/util/math_functions.hpp"
 #include "caffe/util/upgrade_proto.hpp"
+#include "caffe/data_layers.hpp"
 
 #include "caffe/test/test_caffe_main.hpp"
 
@@ -31,10 +32,28 @@ Net<Dtype>::Net(const string& param_file, Phase phase) {
   Init(param);
 }
 
+//========= changes by Haojin ===========//
+/**
+ * This is intended to enable feature extraction from external image lists.
+ */
 template <typename Dtype>
-void Net<Dtype>::Init(const NetParameter& in_param) {
-  // Set phase from the state.
-  phase_ = in_param.state().phase();
+Net<Dtype>::Net(const NetParameter& param, const std::vector<std::pair<std::string, int> > fn_labels){
+	Init(param, fn_labels);
+}
+/**
+ * create and return net parameter variable
+ */
+template <typename Dtype>
+NetParameter Net<Dtype>::getNetParameterFromFile(const string& param_file){
+  NetParameter param;
+  ReadNetParamsFromTextFileOrDie(param_file, &param);
+  return param;
+}
+//========================================//
+
+template <typename Dtype>
+void Net<Dtype>::Init(const NetParameter& in_param, const std::vector<std::pair<std::string, int> > fn_labels) {
+  phase = in_param.state().phase();
   // Filter layers based on their include/exclude rules and
   // the current NetState.
   NetParameter filtered_param;
@@ -65,14 +84,14 @@ void Net<Dtype>::Init(const NetParameter& in_param) {
     AppendTop(param, layer_id, input_id, &available_blobs, &blob_name_to_idx);
   }
   DLOG(INFO) << "Memory required for data: " << memory_used_ * sizeof(Dtype);
-  // For each layer, set up its input and output
-  bottom_vecs_.resize(param.layer_size());
-  top_vecs_.resize(param.layer_size());
-  bottom_id_vecs_.resize(param.layer_size());
+  // For each layer, set up their input and output
+  bottom_vecs_.resize(param.layers_size());
+  top_vecs_.resize(param.layers_size());
+  bottom_id_vecs_.resize(param.layers_size());
   param_id_vecs_.resize(param.layer_size());
-  top_id_vecs_.resize(param.layer_size());
-  bottom_need_backward_.resize(param.layer_size());
-  for (int layer_id = 0; layer_id < param.layer_size(); ++layer_id) {
+  top_id_vecs_.resize(param.layers_size());
+  bottom_need_backward_.resize(param.layers_size());
+  for (int layer_id = 0; layer_id < param.layers_size(); ++layer_id) {
     // Inherit phase from net if unset.
     if (!param.layer(layer_id).has_phase()) {
       param.mutable_layer(layer_id)->set_phase(phase_);
@@ -85,6 +104,12 @@ void Net<Dtype>::Init(const NetParameter& in_param) {
           << "propagate_down param must be specified "
           << "either 0 or bottom_size times ";
     }
+    //========= changes by Haojin ===========//
+    Layer<Dtype>* ly = GetLayer<Dtype>(layer_param);
+    if(!fn_labels.empty() && layer_param.type() == LayerParameter_LayerType_IMAGE_DATA)
+    	((ImageDataLayer<Dtype>*)ly)->SetImageFileNameLabelList(fn_labels);
+
+    //=======================================//
     layers_.push_back(LayerRegistry<Dtype>::CreateLayer(layer_param));
     layer_names_.push_back(layer_param.name());
     LOG(INFO) << "Creating Layer " << layer_param.name();
