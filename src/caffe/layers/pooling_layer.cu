@@ -2,7 +2,6 @@
 #include <cfloat>
 #include <vector>
 
-
 #include "caffe/layer.hpp"
 #include "caffe/util/math_functions.hpp"
 #include "caffe/vision_layers.hpp"
@@ -150,6 +149,35 @@ __global__ void StoPoolForwardTest(const int nthreads,
   }
 }
 
+template <typename Dtype>
+__global__ void MaxoutPoolForward(const int nthreads, const Dtype* bottom_data,
+        const int num, const int channels, const int height,
+        const int width, int group_size, Dtype* top_data,
+        int* mask, Dtype* top_mask) {
+    CUDA_KERNEL_LOOP(index, nthreads) {
+      // get all current values
+      int w = index % width;
+      int h = (index / width) % height;
+      int c = (index / width / height) % channels;
+      int n = index / width / height / channels;
+
+
+      // do the maxout pooling
+      for (int g = 0; g < group_size; ++g) {
+          int bottom_data_offset =
+              ((n * channels + (group_size * c + g)) * height + h) * width + w;
+          if (top_data[index] < bottom_data[bottom_data_offset]) {
+            top_data[index] = bottom_data[bottom_data_offset];
+            if (mask) {
+                mask[index] = bottom_data_offset;
+            } else {
+                top_mask[index] = bottom_data_offset;
+            }
+          }
+      }
+    }
+}
+
 
 template <typename Dtype>
 void PoolingLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
@@ -203,9 +231,8 @@ void PoolingLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
           kernel_w_, stride_h_, stride_w_, top_data);
     }
     break;
-<<<<<<< HEAD
-=======
   case PoolingParameter_PoolMethod_MAXOUT:
+    // NOLINT_NEXT_LINE(whitespace/operators)
     if (use_top_mask) {
       top_mask = top[1]->mutable_gpu_data();
     } else {
@@ -218,7 +245,6 @@ void PoolingLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
       count, bottom_data, bottom[0]->num(), channels_,
               height_, width_, group_size, top_data, mask, top_mask);
     break;
->>>>>>> 8da63d7... fixed linter errors
   default:
     LOG(FATAL) << "Unknown pooling method.";
   }
@@ -339,6 +365,17 @@ __global__ void StoPoolBackward(const int nthreads,
   }
 }
 
+template <typename Dtype>
+__global__ void MaxoutPoolBackward(const int nthreads, const Dtype* top_diff,
+        const int* mask, const Dtype* top_mask, Dtype* bottom_diff) {
+  CUDA_KERNEL_LOOP(index, nthreads) {
+      // PLEASE NOTE: we are looping over the top blob and not the bottom
+      // blob, hence the easy code
+      int bottomIndex = mask ? mask[index] : top_mask[index];
+      bottom_diff[bottomIndex] += top_diff[index];
+    }
+}
+
 
 template <typename Dtype>
 void PoolingLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
@@ -349,6 +386,7 @@ void PoolingLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
   const Dtype* top_diff = top[0]->gpu_diff();
   Dtype* bottom_diff = bottom[0]->mutable_gpu_diff();
   const int count = bottom[0]->count();
+  const int maxoutCount = top[0]->count();
   caffe_gpu_set(count, Dtype(0.), bottom_diff);
   // We'll output the mask to top[1] if it's of size >1.
   const bool use_top_mask = top.size() > 1;
@@ -382,6 +420,18 @@ void PoolingLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
         top[0]->num(), channels_, height_, width_, pooled_height_,
         pooled_width_, kernel_h_, kernel_w_, stride_h_, stride_w_,
         bottom_diff);
+    break;
+  case PoolingParameter_PoolMethod_MAXOUT:
+    if (use_top_mask) {
+        top_mask = top[1]->gpu_data();
+    } else {
+        mask = max_idx_.gpu_data();
+    }
+    // NOLINT_NEXT_LINE(whitespace/operators)
+    MaxoutPoolBackward<Dtype>
+    // NOLINT_NEXT_LINE(whitespace/operators)
+            <<<CAFFE_GET_BLOCKS(maxoutCount), CAFFE_CUDA_NUM_THREADS>>>(
+        maxoutCount, top_diff, mask, top_mask, bottom_diff);
     break;
   default:
     LOG(FATAL) << "Unknown pooling method.";
