@@ -105,7 +105,7 @@ void Net<Dtype>::Init(const NetParameter& in_param, const std::vector<std::pair<
           << "either 0 or bottom_size times ";
     }
     //========= changes by Haojin ===========//
-    Layer<Dtype>* ly = GetLayer<Dtype>(layer_param);
+    Layer<Dtype>* ly = LayerRegistry<Dtype>::CreateLayer(layer_param);
     if(!fn_labels.empty() && layer_param.type() == LayerParameter_LayerType_IMAGE_DATA)
     	((ImageDataLayer<Dtype>*)ly)->SetImageFileNameLabelList(fn_labels);
 
