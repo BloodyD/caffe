@@ -13,7 +13,8 @@ pkg_check_modules(PC_LIBOpenCV opencv)
 find_path(LIBOpenCV_INCLUDE_DIR  opencv2/opencv.hpp
           HINTS 
 	/Users/haojin/install_software/opencv-3.0.0-beta/install/include
-	/home/hyang/workspace/opencv3.0/install/include	
+	/home/hyang/workspace/opencv3.0/install/include
+	/home/fb10dl02/workspace/opencv3.0/install/include
 	${PC_LIBOpenCV_INCLUDE_DIRS} 
 	${PC_LIBOpenCV_INCLUDE_DIR} )
 set(LIBOpenCV_INCLUDE_DIRS ${LIBOpenCV_INCLUDE_DIR} )
@@ -33,6 +34,7 @@ foreach(__CVLIB ${OPENCV_LIB_COMPONENTS})
 		HINTS 
 		/Users/haojin/install_software/opencv-3.0.0-beta/install/lib
 		/home/hyang/workspace/opencv3.0/install/lib
+		/home/fb10dl02/workspace/opencv3.0/install/lib
 		${PC_LIBOpenCV_LIBDIR} 
 		${PC_LIBOpenCV_LIBRARY_DIRS})
 	#DEBUG
