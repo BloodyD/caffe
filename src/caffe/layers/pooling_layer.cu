@@ -241,6 +241,7 @@ void PoolingLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
     } else {
       mask = max_idx_.mutable_gpu_data();
     }
+    caffe_gpu_set(count, Dtype(-FLT_MAX), top_data);
     // NOLINT_NEXT_LINE(whitespace/operators)
     MaxoutPoolForward<Dtype><<<CAFFE_GET_BLOCKS(count),
                                     CAFFE_CUDA_NUM_THREADS>>>(
@@ -392,7 +393,6 @@ __global__ void MaxoutPoolBackward(const int nthreads, const Dtype* top_diff,
       bottom_diff[index] = gradient;
     }
 }
-
 
 template <typename Dtype>
 void PoolingLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
