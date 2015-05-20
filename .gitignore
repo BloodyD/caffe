@@ -54,6 +54,7 @@
 
 # User's build configuration
 Makefile.config
+.localconfig
 
 # Data and models are either
 # 1. reference, and not casually committed
