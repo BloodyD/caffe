@@ -25,11 +25,10 @@ class Net {
  public:
   explicit Net(const NetParameter& param);
   explicit Net(const string& param_file, Phase phase);
-  explicit Net(const NetParameter& param, const std::vector<std::pair<std::string, int> > fn_labels);
   virtual ~Net() {}
 
   /// @brief Initialize a network with a NetParameter.
-  void Init(const NetParameter& param, const std::vector<std::pair<std::string, int> > fn_labels=std::vector<std::pair<std::string, int> >());
+  void Init(const NetParameter& param);
 
   /**
    * @brief Run Forward with the input Blob%s already fed separately.
@@ -187,7 +186,7 @@ class Net {
   static bool StateMeetsRule(const NetState& state, const NetStateRule& rule,
       const string& layer_name);
 
-  //Get netParameter
+  // Helper for getting Net Parameters
   static NetParameter getNetParameterFromFile(const string& param_file);
 
  protected:
@@ -252,7 +251,6 @@ class Net {
   vector<int> net_output_blob_indices_;
   vector<Blob<Dtype>*> net_input_blobs_;
   vector<Blob<Dtype>*> net_output_blobs_;
-  string name_;
   /// The parameters in the network.
   vector<shared_ptr<Blob<Dtype> > > params_;
   /// the learning rate multipliers

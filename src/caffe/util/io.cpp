@@ -2,13 +2,10 @@
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/text_format.h>
-//====== changes by Haojin, for compiling with opencv3.0 =====//
-//#include <opencv2/core/core.hpp>
-//#include <opencv2/highgui/highgui.hpp>
-//#include <opencv2/highgui/highgui_c.h>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/highgui/highgui_c.h>
 #include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/imgcodecs/imgcodecs.hpp>
-//============================================================//
 #include <stdint.h>
 
 #include <algorithm>
@@ -73,11 +70,8 @@ void WriteProtoToBinaryFile(const Message& proto, const char* filename) {
 cv::Mat ReadImageToCVMat(const string& filename,
     const int height, const int width, const bool is_color) {
   cv::Mat cv_img;
-  //====== changes by Haojin, for compiling with opencv3.0 =====//
-  //1: color, 0: grayscale
-  int cv_read_flag = (is_color ? 1 :
-    0);
-  //============================================================//
+  int cv_read_flag = (is_color ? CV_LOAD_IMAGE_COLOR :
+    CV_LOAD_IMAGE_GRAYSCALE);
   cv::Mat cv_img_origin = cv::imread(filename, cv_read_flag);
   if (!cv_img_origin.data) {
     LOG(ERROR) << "Could not open or find file " << filename;
@@ -165,25 +159,14 @@ bool ReadFileToDatum(const string& filename, const int label,
 cv::Mat DecodeDatumToCVMatNative(const Datum& datum) {
   cv::Mat cv_img;
   CHECK(datum.encoded()) << "Datum not encoded";
-  //====== changes by Haojin, for compiling with opencv3.0 =====//
-  //1: color, 0: grayscale
-  int cv_read_flag = (is_color ? 1 :
-    0);
-  //============================================================//
   const string& data = datum.data();
   std::vector<char> vec_data(data.c_str(), data.c_str() + data.size());
-  if (height > 0 && width > 0) {
-    cv::Mat cv_img_origin = cv::imdecode(cv::Mat(vec_data), cv_read_flag);
-    cv::resize(cv_img_origin, cv_img, cv::Size(width, height));
-  } else {
-    cv_img = cv::imdecode(vec_data, cv_read_flag);
-  }
+  cv_img = cv::imdecode(vec_data, -1);
   if (!cv_img.data) {
     LOG(ERROR) << "Could not decode datum ";
   }
   return cv_img;
 }
-
 cv::Mat DecodeDatumToCVMat(const Datum& datum, bool is_color) {
   cv::Mat cv_img;
   CHECK(datum.encoded()) << "Datum not encoded";
@@ -199,7 +182,6 @@ cv::Mat DecodeDatumToCVMat(const Datum& datum, bool is_color) {
 }
 
 // If Datum is encoded will decoded using DecodeDatumToCVMat and CVMatToDatum
-// if height and width are set it will resize it
 // If Datum is not encoded will do nothing
 bool DecodeDatumNative(Datum* datum) {
   if (datum->encoded()) {
