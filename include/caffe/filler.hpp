@@ -35,7 +35,7 @@ class ConstantFiller : public Filler<Dtype> {
       : Filler<Dtype>(param) {}
   virtual void Fill(Blob<Dtype>* blob) {
     Dtype* data = blob->mutable_cpu_data();
-    const int count = blob->count();
+    const size_t count = blob->count();
     const Dtype value = this->filler_param_.value();
     CHECK(count);
     for (int i = 0; i < count; ++i) {
@@ -82,7 +82,7 @@ class GaussianFiller : public Filler<Dtype> {
       CHECK_GE(blob->num_axes(), 1);
       const int num_outputs = blob->shape(0);
       Dtype non_zero_probability = Dtype(sparse) / Dtype(num_outputs);
-      rand_vec_.reset(new SyncedMemory(blob->count() * sizeof(int)));
+      rand_vec_.reset(new SyncedMemory(blob->count() * sizeof(size_t)));
       int* mask = reinterpret_cast<int*>(rand_vec_->mutable_cpu_data());
       caffe_rng_bernoulli(blob->count(), non_zero_probability, mask);
       for (int i = 0; i < blob->count(); ++i) {
@@ -109,7 +109,7 @@ class PositiveUnitballFiller : public Filler<Dtype> {
     caffe_rng_uniform<Dtype>(blob->count(), 0, 1, blob->mutable_cpu_data());
     // We expect the filler to not be called very frequently, so we will
     // just use a simple implementation
-    int dim = blob->count() / blob->num();
+    size_t dim = blob->count() / blob->num();
     CHECK(dim);
     for (int i = 0; i < blob->num(); ++i) {
       Dtype sum = 0;
@@ -147,7 +147,7 @@ class XavierFiller : public Filler<Dtype> {
       : Filler<Dtype>(param) {}
   virtual void Fill(Blob<Dtype>* blob) {
     CHECK(blob->count());
-    int fan_in = blob->count() / blob->num();
+    size_t fan_in = blob->count() / blob->num();
     Dtype scale = sqrt(Dtype(3) / fan_in);
     caffe_rng_uniform<Dtype>(blob->count(), -scale, scale,
         blob->mutable_cpu_data());

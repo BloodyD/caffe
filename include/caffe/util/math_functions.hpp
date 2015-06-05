@@ -34,10 +34,10 @@ void caffe_cpu_axpby(const int N, const Dtype alpha, const Dtype* X,
     const Dtype beta, Dtype* Y);
 
 template <typename Dtype>
-void caffe_copy(const int N, const Dtype *X, Dtype *Y);
+void caffe_copy(const size_t N, const Dtype *X, Dtype *Y);
 
 template <typename Dtype>
-void caffe_set(const int N, const Dtype alpha, Dtype *X);
+void caffe_set(const size_t N, const Dtype alpha, Dtype *X);
 
 inline void caffe_memset(const size_t N, const int alpha, void* X) {
   memset(X, alpha, N);  // NOLINT(caffe/alt_fn)
@@ -73,17 +73,17 @@ template <typename Dtype>
 Dtype caffe_nextafter(const Dtype b);
 
 template <typename Dtype>
-void caffe_rng_uniform(const int n, const Dtype a, const Dtype b, Dtype* r);
+void caffe_rng_uniform(const size_t n, const Dtype a, const Dtype b, Dtype *r);
 
 template <typename Dtype>
-void caffe_rng_gaussian(const int n, const Dtype mu, const Dtype sigma,
-                        Dtype* r);
+void caffe_rng_gaussian(const size_t n, const Dtype mu, const Dtype sigma,
+                        Dtype *r);
 
 template <typename Dtype>
-void caffe_rng_bernoulli(const int n, const Dtype p, int* r);
+void caffe_rng_bernoulli(const size_t n, const Dtype p, int *r);
 
 template <typename Dtype>
-void caffe_rng_bernoulli(const int n, const Dtype p, unsigned int* r);
+void caffe_rng_bernoulli(const size_t n, const Dtype p, unsigned int *r);
 
 template <typename Dtype>
 void caffe_exp(const int n, const Dtype* a, Dtype* y);
