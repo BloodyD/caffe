@@ -54,7 +54,7 @@ void caffe_axpy<double>(const int N, const double alpha, const double* X,
     double* Y) { cblas_daxpy(N, alpha, X, 1, Y, 1); }
 
 template <typename Dtype>
-void caffe_set(const int N, const Dtype alpha, Dtype* Y) {
+void caffe_set(const size_t N, const Dtype alpha, Dtype* Y) {
   if (alpha == 0) {
     memset(Y, 0, sizeof(Dtype) * N);  // NOLINT(caffe/alt_fn)
     return;
@@ -64,9 +64,9 @@ void caffe_set(const int N, const Dtype alpha, Dtype* Y) {
   }
 }
 
-template void caffe_set<int>(const int N, const int alpha, int* Y);
-template void caffe_set<float>(const int N, const float alpha, float* Y);
-template void caffe_set<double>(const int N, const double alpha, double* Y);
+template void caffe_set<int>(const size_t N, const int alpha, int *Y);
+template void caffe_set<float>(const size_t N, const float alpha, float* Y);
+template void caffe_set<double>(const size_t N, const double alpha, double* Y);
 
 template <>
 void caffe_add_scalar(const int N, const float alpha, float* Y) {
@@ -83,7 +83,7 @@ void caffe_add_scalar(const int N, const double alpha, double* Y) {
 }
 
 template <typename Dtype>
-void caffe_copy(const int N, const Dtype* X, Dtype* Y) {
+void caffe_copy(const size_t N, const Dtype* X, Dtype* Y) {
   if (X != Y) {
     if (Caffe::mode() == Caffe::GPU) {
 #ifndef CPU_ONLY
@@ -98,11 +98,11 @@ void caffe_copy(const int N, const Dtype* X, Dtype* Y) {
   }
 }
 
-template void caffe_copy<int>(const int N, const int* X, int* Y);
-template void caffe_copy<unsigned int>(const int N, const unsigned int* X,
+template void caffe_copy<int>(const size_t N, const int* X, int* Y);
+template void caffe_copy<unsigned int>(const size_t N, const unsigned int* X,
     unsigned int* Y);
-template void caffe_copy<float>(const int N, const float* X, float* Y);
-template void caffe_copy<double>(const int N, const double* X, double* Y);
+template void caffe_copy<float>(const size_t N, const float* X, float* Y);
+template void caffe_copy<double>(const size_t N, const double* X, double* Y);
 
 template <>
 void caffe_scal<float>(const int N, const float alpha, float *X) {
@@ -233,7 +233,7 @@ template
 double caffe_nextafter(const double b);
 
 template <typename Dtype>
-void caffe_rng_uniform(const int n, const Dtype a, const Dtype b, Dtype* r) {
+void caffe_rng_uniform(const size_t n, const Dtype a, const Dtype b, Dtype* r) {
   CHECK_GE(n, 0);
   CHECK(r);
   CHECK_LE(a, b);
@@ -246,15 +246,15 @@ void caffe_rng_uniform(const int n, const Dtype a, const Dtype b, Dtype* r) {
 }
 
 template
-void caffe_rng_uniform<float>(const int n, const float a, const float b,
+void caffe_rng_uniform<float>(const size_t n, const float a, const float b,
                               float* r);
 
 template
-void caffe_rng_uniform<double>(const int n, const double a, const double b,
+void caffe_rng_uniform<double>(const size_t n, const double a, const double b,
                                double* r);
 
 template <typename Dtype>
-void caffe_rng_gaussian(const int n, const Dtype a,
+void caffe_rng_gaussian(const size_t n, const Dtype a,
                         const Dtype sigma, Dtype* r) {
   CHECK_GE(n, 0);
   CHECK(r);
@@ -268,15 +268,15 @@ void caffe_rng_gaussian(const int n, const Dtype a,
 }
 
 template
-void caffe_rng_gaussian<float>(const int n, const float mu,
+void caffe_rng_gaussian<float>(const size_t n, const float mu,
                                const float sigma, float* r);
 
 template
-void caffe_rng_gaussian<double>(const int n, const double mu,
+void caffe_rng_gaussian<double>(const size_t n, const double mu,
                                 const double sigma, double* r);
 
 template <typename Dtype>
-void caffe_rng_bernoulli(const int n, const Dtype p, int* r) {
+void caffe_rng_bernoulli(const size_t n, const Dtype p, int* r) {
   CHECK_GE(n, 0);
   CHECK(r);
   CHECK_GE(p, 0);
@@ -290,13 +290,13 @@ void caffe_rng_bernoulli(const int n, const Dtype p, int* r) {
 }
 
 template
-void caffe_rng_bernoulli<double>(const int n, const double p, int* r);
+void caffe_rng_bernoulli<double>(const size_t n, const double p, int* r);
 
 template
-void caffe_rng_bernoulli<float>(const int n, const float p, int* r);
+void caffe_rng_bernoulli<float>(const size_t n, const float p, int* r);
 
 template <typename Dtype>
-void caffe_rng_bernoulli(const int n, const Dtype p, unsigned int* r) {
+void caffe_rng_bernoulli(const size_t n, const Dtype p, unsigned int* r) {
   CHECK_GE(n, 0);
   CHECK(r);
   CHECK_GE(p, 0);
@@ -310,10 +310,10 @@ void caffe_rng_bernoulli(const int n, const Dtype p, unsigned int* r) {
 }
 
 template
-void caffe_rng_bernoulli<double>(const int n, const double p, unsigned int* r);
+void caffe_rng_bernoulli<double>(const size_t n, const double p, unsigned int* r);
 
 template
-void caffe_rng_bernoulli<float>(const int n, const float p, unsigned int* r);
+void caffe_rng_bernoulli<float>(const size_t n, const float p, unsigned int* r);
 
 template <>
 float caffe_cpu_strided_dot<float>(const int n, const float* x, const int incx,

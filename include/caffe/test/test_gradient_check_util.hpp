@@ -75,7 +75,7 @@ void GradientChecker<Dtype>::CheckGradientSingle(Layer<Dtype>* layer,
     CHECK_EQ(0, layer->blobs().size());
     CHECK_LE(0, top_id);
     CHECK_LE(0, top_data_id);
-    const int top_count = top[top_id]->count();
+    const size_t top_count = top[top_id]->count();
     for (int blob_id = 0; blob_id < bottom.size(); ++blob_id) {
       CHECK_EQ(top_count, bottom[blob_id]->count());
     }
@@ -110,7 +110,7 @@ void GradientChecker<Dtype>::CheckGradientSingle(Layer<Dtype>* layer,
     Blob<Dtype>* current_blob = blobs_to_check[blob_id];
     computed_gradient_blobs[blob_id].reset(new Blob<Dtype>());
     computed_gradient_blobs[blob_id]->ReshapeLike(*current_blob);
-    const int count = blobs_to_check[blob_id]->count();
+    const size_t count = blobs_to_check[blob_id]->count();
     const Dtype* diff = blobs_to_check[blob_id]->cpu_diff();
     Dtype* computed_gradients =
         computed_gradient_blobs[blob_id]->mutable_cpu_data();
