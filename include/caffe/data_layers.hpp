@@ -232,6 +232,7 @@ class ImageDataLayer : public BasePrefetchingDataLayer<Dtype> {
   virtual inline int ExactNumBottomBlobs() const { return 0; }
   virtual inline int ExactNumTopBlobs() const { return 2; }
 
+  void SetImageFileNameLabelList(const vector<std::pair<std::string, int> > value){ lines_ = value; }
  protected:
   shared_ptr<Caffe::RNG> prefetch_rng_;
   virtual void ShuffleImages();
@@ -239,6 +240,7 @@ class ImageDataLayer : public BasePrefetchingDataLayer<Dtype> {
 
   vector<std::pair<std::string, int> > lines_;
   int lines_id_;
+
 };
 
 /**

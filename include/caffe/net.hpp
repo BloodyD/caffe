@@ -186,6 +186,9 @@ class Net {
   static bool StateMeetsRule(const NetState& state, const NetStateRule& rule,
       const string& layer_name);
 
+  // Helper for getting Net Parameters
+  static NetParameter getNetParameterFromFile(const string& param_file);
+
  protected:
   // Helpers for Init.
   /// @brief Append a new input or top blob to the net.

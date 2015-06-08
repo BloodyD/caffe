@@ -31,14 +31,17 @@ void ImageDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
   CHECK((new_height == 0 && new_width == 0) ||
       (new_height > 0 && new_width > 0)) << "Current implementation requires "
       "new_height and new_width to be set at the same time.";
-  // Read the file with filenames and labels
-  const string& source = this->layer_param_.image_data_param().source();
-  LOG(INFO) << "Opening file " << source;
-  std::ifstream infile(source.c_str());
-  string filename;
-  int label;
-  while (infile >> filename >> label) {
-    lines_.push_back(std::make_pair(filename, label));
+
+  if(lines_.empty()){
+	  // Read the file with filenames and labels
+	  const string& source = this->layer_param_.image_data_param().source();
+	  LOG(INFO) << "Opening file " << source;
+	  std::ifstream infile(source.c_str());
+	  string filename;
+	  int label;
+	  while (infile >> filename >> label) {
+		lines_.push_back(std::make_pair(filename, label));
+	  }
   }
 
   if (this->layer_param_.image_data_param().shuffle()) {
