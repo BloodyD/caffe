@@ -7,6 +7,15 @@
 #include "caffe/common.hpp"
 #include "caffe/util/insert_splits.hpp"
 
+
+#include <android/log.h>
+#define TAG "CaffeAndroid"
+#define LOGV(...) __android_log_print(ANDROID_LOG_VERBOSE, TAG, __VA_ARGS__)
+#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG  , TAG, __VA_ARGS__)
+#define LOGI(...) __android_log_print(ANDROID_LOG_INFO   , TAG, __VA_ARGS__)
+#define LOGW(...) __android_log_print(ANDROID_LOG_WARN   , TAG, __VA_ARGS__)
+#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR  , TAG, __VA_ARGS__)
+
 namespace caffe {
 
 void InsertSplits(const NetParameter& param, NetParameter* param_split) {
@@ -21,17 +30,21 @@ void InsertSplits(const NetParameter& param, NetParameter* param_split) {
   map<int, string> layer_idx_to_layer_name;
   layer_idx_to_layer_name[-1] = "input";
   // Determine the number of times each blob is used as an input (bottom) blob.
+  LOGI("%d input blobs", param.input_size());
   for (int i = 0; i < param.input_size(); ++i) {
     const string& blob_name = param.input(i);
     blob_name_to_last_top_idx[blob_name] = make_pair(-1, i);
   }
+  LOGI("%d layers", param.layer_size());
   for (int i = 0; i < param.layer_size(); ++i) {
     const LayerParameter& layer_param = param.layer(i);
     layer_idx_to_layer_name[i] = layer_param.name();
     for (int j = 0; j < layer_param.bottom_size(); ++j) {
       const string& blob_name = layer_param.bottom(j);
+      LOGI("current blob: %s", blob_name.c_str());
       if (blob_name_to_last_top_idx.find(blob_name) ==
           blob_name_to_last_top_idx.end()) {
+        LOGE("Unknown blob input %s to layer %d", blob_name.c_str(), j);
         LOG(FATAL) << "Unknown blob input " << blob_name << " to layer " << j;
       }
       const pair<int, int>& bottom_idx = make_pair(i, j);

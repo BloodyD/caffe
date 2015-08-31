@@ -17,6 +17,14 @@
 #include "caffe/proto/caffe.pb.h"
 #include "caffe/util/io.hpp"
 
+#include <android/log.h>
+#define TAG "CaffeAndroid"
+#define LOGV(...) __android_log_print(ANDROID_LOG_VERBOSE, TAG, __VA_ARGS__)
+#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG  , TAG, __VA_ARGS__)
+#define LOGI(...) __android_log_print(ANDROID_LOG_INFO   , TAG, __VA_ARGS__)
+#define LOGW(...) __android_log_print(ANDROID_LOG_WARN   , TAG, __VA_ARGS__)
+#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR  , TAG, __VA_ARGS__)
+
 const int kProtoReadBytesLimit = INT_MAX;  // Max size of 2 GB minus 1 byte.
 
 namespace caffe {
@@ -31,13 +39,17 @@ using google::protobuf::Message;
 
 bool ReadProtoFromTextFile(const char* filename, Message* proto) {
   int fd = open(filename, O_RDONLY);
+  if(fd == -1)
+    LOGE("File not found: %s", filename);
   CHECK_NE(fd, -1) << "File not found: " << filename;
   FileInputStream* input = new FileInputStream(fd);
   bool success = google::protobuf::TextFormat::Parse(input, proto);
+  LOGI("protobuf parse successfully: %d", success);
   delete input;
   close(fd);
   return success;
 }
+
 
 void WriteProtoToTextFile(const Message& proto, const char* filename) {
   int fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
@@ -227,7 +239,7 @@ void CVMatToDatum(const cv::Mat& cv_img, Datum* datum) {
   }
   datum->set_data(buffer);
 }
-
+/*
 // Verifies format of data stored in HDF5 file and reshapes blob accordingly.
 template <typename Dtype>
 void hdf5_load_nd_dataset_helper(
@@ -302,5 +314,5 @@ void hdf5_save_nd_dataset<double>(
       file_id, dataset_name.c_str(), HDF5_NUM_DIMS, dims, blob.cpu_data());
   CHECK_GE(status, 0) << "Failed to make double dataset " << dataset_name;
 }
-
+*/
 }  // namespace caffe

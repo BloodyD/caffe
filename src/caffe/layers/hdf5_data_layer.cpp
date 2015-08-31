@@ -11,7 +11,6 @@ TODO:
 #include <vector>
 
 #include "hdf5.h"
-#include "hdf5_hl.h"
 #include "stdint.h"
 
 #include "caffe/data_layers.hpp"

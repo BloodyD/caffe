@@ -30,6 +30,12 @@ if(UNIX OR APPLE)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -Wall")
 endif()
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+IF(ANDROID)
+  add_definitions(-DUSE_EIGEN)
+  include_directories(${ANDROID_TOOLCHAIN_ROOT}/user/include/eigen3)
+ENDIF()
+
 if(USE_libstdcpp)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libstdc++")
   message("-- Warning: forcing libstdc++ (controlled by USE_libstdcpp option in cmake)")
@@ -45,16 +51,21 @@ configure_file(cmake/Templates/caffe_config.h.in "${PROJECT_BINARY_DIR}/caffe_co
 
 # ---[ Includes
 set(Caffe_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
-include_directories(${Caffe_INCLUDE_DIR} ${PROJECT_BINARY_DIR})
+include_directories(
+  ${Caffe_INCLUDE_DIR}
+  ${PROJECT_BINARY_DIR})
+
 include_directories(BEFORE src) # This is needed for gtest.
 
 # ---[ Subdirectories
 add_subdirectory(src/gtest)
 add_subdirectory(src/caffe)
+IF(NOT ANDROID)
 add_subdirectory(tools)
 add_subdirectory(examples)
-add_subdirectory(python)
 add_subdirectory(matlab)
+ENDIF()
+add_subdirectory(python)
 add_subdirectory(docs)
 
 # ---[ Linter target

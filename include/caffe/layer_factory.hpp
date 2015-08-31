@@ -45,6 +45,14 @@
 #include "caffe/common.hpp"
 #include "caffe/proto/caffe.pb.h"
 
+#include <android/log.h>
+#define TAG "CaffeAndroid"
+#define ANDROID_LOGV(...) __android_log_print(ANDROID_LOG_VERBOSE, TAG, __VA_ARGS__)
+#define ANDROID_LOGD(...) __android_log_print(ANDROID_LOG_DEBUG  , TAG, __VA_ARGS__)
+#define ANDROID_LOGI(...) __android_log_print(ANDROID_LOG_INFO   , TAG, __VA_ARGS__)
+#define ANDROID_LOGW(...) __android_log_print(ANDROID_LOG_WARN   , TAG, __VA_ARGS__)
+#define ANDROID_LOGE(...) __android_log_print(ANDROID_LOG_ERROR  , TAG, __VA_ARGS__)
+
 namespace caffe {
 
 template <typename Dtype>
@@ -67,6 +75,7 @@ class LayerRegistry {
     CHECK_EQ(registry.count(type), 0)
         << "Layer type " << type << " already registered.";
     registry[type] = creator;
+    ANDROID_LOGI("added layer type: %s ", type.c_str());
   }
 
   // Get a layer using a LayerParameter.
@@ -74,6 +83,8 @@ class LayerRegistry {
     LOG(INFO) << "Creating layer " << param.name();
     const string& type = param.type();
     CreatorRegistry& registry = Registry();
+    if(registry.count(type) != 1)
+      ANDROID_LOGE("Unknown layer type: %s (known types: %s)", type.c_str(), LayerTypeList().c_str());
     CHECK_EQ(registry.count(type), 1) << "Unknown layer type: " << type
         << " (known types: " << LayerTypeList() << ")";
     return registry[type](param);

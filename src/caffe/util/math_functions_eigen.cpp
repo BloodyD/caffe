@@ -1,7 +1,5 @@
-#include <boost/math/special_functions/next.hpp>
-#include <boost/random.hpp>
-
 #include <limits>
+#include <random>
 
 #include "caffe/common.hpp"
 #include "caffe/util/math_functions.hpp"
@@ -14,10 +12,25 @@ void caffe_cpu_gemm<float>(const CBLAS_TRANSPOSE TransA,
     const CBLAS_TRANSPOSE TransB, const int M, const int N, const int K,
     const float alpha, const float* A, const float* B, const float beta,
     float* C) {
-  int lda = (TransA == CblasNoTrans) ? K : M;
-  int ldb = (TransB == CblasNoTrans) ? N : K;
-  cblas_sgemm(CblasRowMajor, TransA, TransB, M, N, K, alpha, A, lda, B,
-      ldb, beta, C, N);
+  MAP_SMATRIX(eC, C, M, N);
+  eC *= beta;
+  if (TransA == CblasNoTrans && TransB == CblasNoTrans) {
+    MAP_CONST_SMATRIX(eA, A, M, K);
+    MAP_CONST_SMATRIX(eB, B, K, N);
+    eC.noalias() += alpha * (eA * eB);
+  } else if (TransA == CblasNoTrans && TransB == CblasTrans) {
+    MAP_CONST_SMATRIX(eA, A, M, K);
+    MAP_CONST_SMATRIX(eB, B, N, K);
+    eC.noalias() += alpha * (eA * eB.transpose());
+  } else if (TransA == CblasTrans && TransB == CblasNoTrans) {
+    MAP_CONST_SMATRIX(eA, A, K, M);
+    MAP_CONST_SMATRIX(eB, B, K, N);
+    eC.noalias() += alpha * (eA.transpose() * eB);
+  } else {
+    MAP_CONST_SMATRIX(eA, A, K, M);
+    MAP_CONST_SMATRIX(eB, B, N, K);
+    eC.noalias() += alpha * (eA.transpose() * eB.transpose());
+  }
 }
 
 template<>
@@ -25,33 +38,78 @@ void caffe_cpu_gemm<double>(const CBLAS_TRANSPOSE TransA,
     const CBLAS_TRANSPOSE TransB, const int M, const int N, const int K,
     const double alpha, const double* A, const double* B, const double beta,
     double* C) {
-  int lda = (TransA == CblasNoTrans) ? K : M;
-  int ldb = (TransB == CblasNoTrans) ? N : K;
-  cblas_dgemm(CblasRowMajor, TransA, TransB, M, N, K, alpha, A, lda, B,
-      ldb, beta, C, N);
+  MAP_DMATRIX(eC, C, M, N);
+  eC *= beta;
+  if (TransA == CblasNoTrans && TransB == CblasNoTrans) {
+    MAP_CONST_DMATRIX(eA, A, M, K);
+    MAP_CONST_DMATRIX(eB, B, K, N);
+  eC.noalias() += alpha * (eA * eB);
+  } else if (TransA == CblasNoTrans && TransB == CblasTrans) {
+    MAP_CONST_DMATRIX(eA, A, M, K);
+    MAP_CONST_DMATRIX(eB, B, N, K);
+    eC.noalias() += alpha * (eA * eB.transpose());
+  } else if (TransA == CblasTrans && TransB == CblasNoTrans) {
+    MAP_CONST_DMATRIX(eA, A, K, M);
+    MAP_CONST_DMATRIX(eB, B, K, N);
+    eC.noalias() += alpha * (eA.transpose() * eB);
+  } else {
+    MAP_CONST_DMATRIX(eA, A, K, M);
+    MAP_CONST_DMATRIX(eB, B, N, K);
+    eC.noalias() += alpha * (eA.transpose() * eB.transpose());
+  }
 }
 
 template <>
 void caffe_cpu_gemv<float>(const CBLAS_TRANSPOSE TransA, const int M,
     const int N, const float alpha, const float* A, const float* x,
     const float beta, float* y) {
-  cblas_sgemv(CblasRowMajor, TransA, M, N, alpha, A, N, x, 1, beta, y, 1);
+  MAP_CONST_SMATRIX(eA, A, M, N);
+  if (TransA == CblasNoTrans) {
+    MAP_SVECTOR(eY, y, M);
+    eY *= beta;
+    MAP_CONST_SVECTOR(eX, x, N);
+    eY.noalias() += alpha * (eA * eX);
+  } else {
+    MAP_SVECTOR(eY, y, N);
+    eY *= beta;
+    MAP_CONST_SVECTOR(eX, x, M);
+    eY.noalias() += alpha * (eA.transpose() * eX);
+  }
 }
 
 template <>
 void caffe_cpu_gemv<double>(const CBLAS_TRANSPOSE TransA, const int M,
     const int N, const double alpha, const double* A, const double* x,
     const double beta, double* y) {
-  cblas_dgemv(CblasRowMajor, TransA, M, N, alpha, A, N, x, 1, beta, y, 1);
+  MAP_CONST_DMATRIX(eA, A, M, N);
+  if (TransA == CblasNoTrans) {
+    MAP_DVECTOR(eY, y, M);
+    eY *= beta;
+    MAP_CONST_DVECTOR(eX, x, N);
+    eY.noalias() += alpha * (eA * eX);
+  } else {
+    MAP_DVECTOR(eY, y, N);
+    eY *= beta;
+    MAP_CONST_DVECTOR(eX, x, M);
+    eY.noalias() += alpha * (eA.transpose() * eX);
+  }
 }
 
 template <>
 void caffe_axpy<float>(const int N, const float alpha, const float* X,
-    float* Y) { cblas_saxpy(N, alpha, X, 1, Y, 1); }
+    float* Y) {
+  MAP_SVECTOR(eY, Y, N);
+  MAP_CONST_SVECTOR(eX, X, N);
+  eY = alpha * eX + eY;
+}
 
 template <>
 void caffe_axpy<double>(const int N, const double alpha, const double* X,
-    double* Y) { cblas_daxpy(N, alpha, X, 1, Y, 1); }
+    double* Y) {
+  MAP_DVECTOR(eY, Y, N);
+  MAP_CONST_DVECTOR(eX, X, N);
+  eY = alpha * eX + eY;
+}
 
 template <typename Dtype>
 void caffe_set(const int N, const Dtype alpha, Dtype* Y) {
@@ -106,24 +164,30 @@ template void caffe_copy<double>(const int N, const double* X, double* Y);
 
 template <>
 void caffe_scal<float>(const int N, const float alpha, float *X) {
-  cblas_sscal(N, alpha, X, 1);
+  MAP_SVECTOR(eX, X, N);
+  eX *= alpha;
 }
 
 template <>
 void caffe_scal<double>(const int N, const double alpha, double *X) {
-  cblas_dscal(N, alpha, X, 1);
+  MAP_DVECTOR(eX, X, N);
+  eX *= alpha;
 }
 
 template <>
 void caffe_cpu_axpby<float>(const int N, const float alpha, const float* X,
                             const float beta, float* Y) {
-  cblas_saxpby(N, alpha, X, 1, beta, Y, 1);
+    MAP_SVECTOR(eY, Y, N);
+  MAP_CONST_SVECTOR(eX, X, N);
+  eY = alpha * eX + beta * eY;
 }
 
 template <>
 void caffe_cpu_axpby<double>(const int N, const double alpha, const double* X,
                              const double beta, double* Y) {
-  cblas_daxpby(N, alpha, X, 1, beta, Y, 1);
+  MAP_DVECTOR(eY, Y, N);
+  MAP_CONST_DVECTOR(eX, X, N);
+  eY = alpha * eX + beta * eY;
 }
 
 template <>
@@ -222,8 +286,11 @@ unsigned int caffe_rng_rand() {
 
 template <typename Dtype>
 Dtype caffe_nextafter(const Dtype b) {
-  return boost::math::nextafter<Dtype>(
-      b, std::numeric_limits<Dtype>::max());
+#ifdef __ANDROID__
+  return nextafter(b, std::numeric_limits<Dtype>::max());
+#else
+  return std::nextafter(b, std::numeric_limits<Dtype>::max());
+#endif
 }
 
 template
@@ -237,9 +304,10 @@ void caffe_rng_uniform(const int n, const Dtype a, const Dtype b, Dtype* r) {
   CHECK_GE(n, 0);
   CHECK(r);
   CHECK_LE(a, b);
-  boost::uniform_real<Dtype> random_distribution(a, caffe_nextafter<Dtype>(b));
-  boost::variate_generator<caffe::rng_t*, boost::uniform_real<Dtype> >
-      variate_generator(caffe_rng(), random_distribution);
+  std::uniform_real_distribution<>
+      random_distribution(a, caffe_nextafter<Dtype>(b));
+  std::function<Dtype()>
+      variate_generator = bind(random_distribution, std::ref(*caffe_rng()));
   for (int i = 0; i < n; ++i) {
     r[i] = variate_generator();
   }
@@ -259,9 +327,9 @@ void caffe_rng_gaussian(const int n, const Dtype a,
   CHECK_GE(n, 0);
   CHECK(r);
   CHECK_GT(sigma, 0);
-  boost::normal_distribution<Dtype> random_distribution(a, sigma);
-  boost::variate_generator<caffe::rng_t*, boost::normal_distribution<Dtype> >
-      variate_generator(caffe_rng(), random_distribution);
+  std::normal_distribution<> random_distribution(a, sigma);
+  std::function<Dtype()>
+      variate_generator= bind(random_distribution, std::ref(*caffe_rng()));
   for (int i = 0; i < n; ++i) {
     r[i] = variate_generator();
   }
@@ -281,9 +349,9 @@ void caffe_rng_bernoulli(const int n, const Dtype p, int* r) {
   CHECK(r);
   CHECK_GE(p, 0);
   CHECK_LE(p, 1);
-  boost::bernoulli_distribution<Dtype> random_distribution(p);
-  boost::variate_generator<caffe::rng_t*, boost::bernoulli_distribution<Dtype> >
-      variate_generator(caffe_rng(), random_distribution);
+  std::bernoulli_distribution random_distribution(p);
+  std::function<Dtype()>
+      variate_generator = bind(random_distribution, std::ref(*caffe_rng()));
   for (int i = 0; i < n; ++i) {
     r[i] = variate_generator();
   }
@@ -301,9 +369,9 @@ void caffe_rng_bernoulli(const int n, const Dtype p, unsigned int* r) {
   CHECK(r);
   CHECK_GE(p, 0);
   CHECK_LE(p, 1);
-  boost::bernoulli_distribution<Dtype> random_distribution(p);
-  boost::variate_generator<caffe::rng_t*, boost::bernoulli_distribution<Dtype> >
-      variate_generator(caffe_rng(), random_distribution);
+  std::bernoulli_distribution random_distribution(p);
+  std::function<Dtype() >
+      variate_generator = bind(random_distribution, std::ref(*caffe_rng()));
   for (int i = 0; i < n; ++i) {
     r[i] = static_cast<unsigned int>(variate_generator());
   }
@@ -318,13 +386,21 @@ void caffe_rng_bernoulli<float>(const int n, const float p, unsigned int* r);
 template <>
 float caffe_cpu_strided_dot<float>(const int n, const float* x, const int incx,
     const float* y, const int incy) {
-  return cblas_sdot(n, x, incx, y, incy);
+  int lx = (n + incx - 1) / incx;
+  int ly = (n + incy - 1) / incy;
+  MAP_CONST_SVECTOR_STRIDE(eX, x, lx, incx);
+  MAP_CONST_SVECTOR_STRIDE(eY, y, ly, incy);
+  return eX.dot(eY);
 }
 
 template <>
 double caffe_cpu_strided_dot<double>(const int n, const double* x,
     const int incx, const double* y, const int incy) {
-  return cblas_ddot(n, x, incx, y, incy);
+  int lx = (n + incx - 1) / incx;
+  int ly = (n + incy - 1) / incy;
+  MAP_CONST_DVECTOR_STRIDE(eX, x, lx, incx);
+  MAP_CONST_DVECTOR_STRIDE(eY, y, ly, incy);
+  return eX.dot(eY);
 }
 
 template <typename Dtype>
@@ -362,26 +438,34 @@ int caffe_cpu_hamming_distance<double>(const int n, const double* x,
 
 template <>
 float caffe_cpu_asum<float>(const int n, const float* x) {
-  return cblas_sasum(n, x, 1);
+  float *y = new float[n];
+  memcpy(y, x, sizeof(float)*n);
+  MAP_SVECTOR(eY, y, n);
+  return eY.sum();
 }
 
 template <>
 double caffe_cpu_asum<double>(const int n, const double* x) {
-  return cblas_dasum(n, x, 1);
+  double *y = new double[n];
+  memcpy(y, x, sizeof(double)*n);
+  MAP_DVECTOR(eY, y, n);
+  return eY.sum();
 }
 
 template <>
 void caffe_cpu_scale<float>(const int n, const float alpha, const float *x,
                             float* y) {
-  cblas_scopy(n, x, 1, y, 1);
-  cblas_sscal(n, alpha, y, 1);
+  memcpy(y, x, sizeof(double)*n);
+  MAP_SVECTOR(eY, y, n);
+  eY *= alpha;
 }
 
 template <>
 void caffe_cpu_scale<double>(const int n, const double alpha, const double *x,
                              double* y) {
-  cblas_dcopy(n, x, 1, y, 1);
-  cblas_dscal(n, alpha, y, 1);
+  memcpy(y, x, sizeof(double)*n);
+  MAP_DVECTOR(eY, y, n);
+  eY *= alpha;
 }
 
 }  // namespace caffe
