@@ -246,6 +246,7 @@ void Net<Dtype>::Init(const NetParameter& in_param) {
     LOG(INFO) << "Network initialization done.";
     LOG(INFO) << "Memory required for data: " << memory_used_ * sizeof(Dtype);
   }
+
 }
 
 template <typename Dtype>
@@ -784,6 +785,7 @@ void Net<Dtype>::CopyTrainedLayersFrom(const NetParameter& param) {
     const LayerParameter& source_layer = param.layer(i);
     const string& source_layer_name = source_layer.name();
     int target_layer_id = 0;
+    LOG(INFO) << "searching for " << i << "th Layer";
     while (target_layer_id != layer_names_.size() &&
         layer_names_[target_layer_id] != source_layer_name) {
       ++target_layer_id;
@@ -812,6 +814,7 @@ void Net<Dtype>::CopyTrainedLayersFrom(const NetParameter& param) {
       const bool kReshape = false;
       target_blobs[j]->FromProto(source_layer.blobs(j), kReshape);
     }
+    LOG(INFO) << "Copying done";
   }
 }
 
