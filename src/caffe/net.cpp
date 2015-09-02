@@ -46,11 +46,11 @@ void Net<Dtype>::Init(const NetParameter& in_param) {
   // Filter layers based on their include/exclude rules and
   // the current NetState.
   NetParameter filtered_param;
-  LOGI("unfiltered parameters: %s", in_param.DebugString().c_str());
+  //LOGI("unfiltered parameters: %s", in_param.DebugString().c_str());
   FilterNet(in_param, &filtered_param);
   LOG(INFO) << "Initializing net from parameters: " << std::endl
             << filtered_param.DebugString();
-  LOGI("Initializing net from parameters: %s", filtered_param.DebugString().c_str());
+  //LOGI("Initializing net from parameters: %s", filtered_param.DebugString().c_str());
   // Create a copy of filtered_param with splits added where necessary.
   NetParameter param;
   InsertSplits(filtered_param, &param);
@@ -833,6 +833,7 @@ const shared_ptr<Layer<Dtype> > Net<Dtype>::layer_by_name(
     layer_ptr = layers_[layer_names_index_.find(layer_name)->second];
   } else {
     layer_ptr.reset((Layer<Dtype>*)(NULL));
+    LOGW("Unknown layer name: %s", layer_name.c_str());
     LOG(WARNING) << "Unknown layer name " << layer_name;
   }
   return layer_ptr;

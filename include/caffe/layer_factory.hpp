@@ -115,7 +115,7 @@ class LayerRegisterer {
  public:
   LayerRegisterer(const string& type,
                   shared_ptr<Layer<Dtype> > (*creator)(const LayerParameter&)) {
-    // LOG(INFO) << "Registering layer type: " << type;
+    ANDROID_LOGI("Registering layer type: %s", type.c_str());
     LayerRegistry<Dtype>::AddCreator(type, creator);
   }
 };

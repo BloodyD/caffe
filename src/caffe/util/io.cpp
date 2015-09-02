@@ -215,18 +215,28 @@ bool DecodeDatum(Datum* datum, bool is_color) {
 }
 
 void CVMatToDatum(const cv::Mat& cv_img, Datum* datum) {
+  if(cv_img.depth() != CV_8U)
+    LOGE("Image data type must be unsigned byte");
   CHECK(cv_img.depth() == CV_8U) << "Image data type must be unsigned byte";
+  LOGI("img: %dx%dx%d", cv_img.rows, cv_img.cols, cv_img.channels());
+  LOGI("set_channels");
   datum->set_channels(cv_img.channels());
+  LOGI("set_height");
   datum->set_height(cv_img.rows);
+  LOGI("set_width");
   datum->set_width(cv_img.cols);
+  LOGI("clear_data");
   datum->clear_data();
+  LOGI("clear_float_data");
   datum->clear_float_data();
+  LOGI("set_encoded");
   datum->set_encoded(false);
   int datum_channels = datum->channels();
   int datum_height = datum->height();
   int datum_width = datum->width();
   int datum_size = datum_channels * datum_height * datum_width;
   std::string buffer(datum_size, ' ');
+  LOGI("Copy data to buffer");
   for (int h = 0; h < datum_height; ++h) {
     const uchar* ptr = cv_img.ptr<uchar>(h);
     int img_index = 0;
@@ -237,7 +247,10 @@ void CVMatToDatum(const cv::Mat& cv_img, Datum* datum) {
       }
     }
   }
+  LOGI("setting data");
+  LOGI("%d", buffer.length());
   datum->set_data(buffer);
+  LOGI("datum ready");
 }
 /*
 // Verifies format of data stored in HDF5 file and reshapes blob accordingly.

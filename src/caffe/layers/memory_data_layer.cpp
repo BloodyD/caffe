@@ -6,6 +6,14 @@
 #include "caffe/layer.hpp"
 #include "caffe/util/io.hpp"
 
+#include <android/log.h>
+#define __TAG "CaffeAndroid-MemLayer"
+#define LOGV(...) __android_log_print(ANDROID_LOG_VERBOSE, __TAG, __VA_ARGS__)
+#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG  , __TAG, __VA_ARGS__)
+#define LOGI(...) __android_log_print(ANDROID_LOG_INFO   , __TAG, __VA_ARGS__)
+#define LOGW(...) __android_log_print(ANDROID_LOG_WARN   , __TAG, __VA_ARGS__)
+#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR  , __TAG, __VA_ARGS__)
+
 namespace caffe {
 
 template <typename Dtype>
@@ -32,17 +40,28 @@ void MemoryDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
 
 template <typename Dtype>
 void MemoryDataLayer<Dtype>::AddDatumVector(const vector<Datum>& datum_vector) {
+  LOGI("AddDatumVector");
+  if(has_new_data_)
+    LOGE("Can't add data until current data has been consumed.");
   CHECK(!has_new_data_) <<
       "Can't add data until current data has been consumed.";
   size_t num = datum_vector.size();
+  if(num <= 0)
+    LOGE("There is no datum to add.");
   CHECK_GT(num, 0) << "There is no datum to add.";
+  if((num % batch_size_) != 0)
+    LOGE("The added data must be a multiple of the batch size.");
   CHECK_EQ(num % batch_size_, 0) <<
       "The added data must be a multiple of the batch size.";
+  LOGI("Reshaping data");
   added_data_.Reshape(num, channels_, height_, width_);
+  LOGI("Reshaping label");
   added_label_.Reshape(num, 1, 1, 1);
   // Apply data transformations (mirror, scale, crop...)
+  LOGI("apply data transformations");
   this->data_transformer_->Transform(datum_vector, &added_data_);
   // Copy Labels
+  LOGI("copy labels");
   Dtype* top_label = added_label_.mutable_cpu_data();
   for (int item_id = 0; item_id < num; ++item_id) {
     top_label[item_id] = datum_vector[item_id].label();
