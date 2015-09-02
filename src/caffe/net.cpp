@@ -12,20 +12,11 @@
 #include "caffe/net.hpp"
 #include "caffe/parallel.hpp"
 #include "caffe/proto/caffe.pb.h"
-#include "caffe/util/hdf5.hpp"
 #include "caffe/util/insert_splits.hpp"
 #include "caffe/util/math_functions.hpp"
 #include "caffe/util/upgrade_proto.hpp"
 
 #include "caffe/test/test_caffe_main.hpp"
-
-#include <android/log.h>
-#define TAG "CaffeAndroid"
-#define LOGV(...) __android_log_print(ANDROID_LOG_VERBOSE, TAG, __VA_ARGS__)
-#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG  , TAG, __VA_ARGS__)
-#define LOGI(...) __android_log_print(ANDROID_LOG_INFO   , TAG, __VA_ARGS__)
-#define LOGW(...) __android_log_print(ANDROID_LOG_WARN   , TAG, __VA_ARGS__)
-#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR  , TAG, __VA_ARGS__)
 
 namespace caffe {
 
@@ -53,12 +44,10 @@ void Net<Dtype>::Init(const NetParameter& in_param) {
   // Filter layers based on their include/exclude rules and
   // the current NetState.
   NetParameter filtered_param;
-  //LOGI("unfiltered parameters: %s", in_param.DebugString().c_str());
   FilterNet(in_param, &filtered_param);
   if (Caffe::root_solver()) {
     LOG(INFO) << "Initializing net from parameters: " << std::endl
               << filtered_param.DebugString();
-    //LOGI("Initializing net from parameters: %s", filtered_param.DebugString().c_str());
   }
   // Create a copy of filtered_param with splits added where necessary.
   NetParameter param;
@@ -69,8 +58,6 @@ void Net<Dtype>::Init(const NetParameter& in_param) {
   set<string> available_blobs;
   CHECK(param.input_dim_size() == 0 || param.input_shape_size() == 0)
       << "Must specify either input_shape OR deprecated input_dim, not both.";
-  if(!(param.input_dim_size() == 0 || param.input_shape_size() == 0))
-      LOGE("Must specify either input_shape OR deprecated input_dim, not both.");
   if (param.input_dim_size() > 0) {
     // Deprecated 4D dimensions.
     CHECK_EQ(param.input_size() * 4, param.input_dim_size())
@@ -86,7 +73,6 @@ void Net<Dtype>::Init(const NetParameter& in_param) {
     AppendTop(param, layer_id, input_id, &available_blobs, &blob_name_to_idx);
   }
   DLOG_IF(INFO, Caffe::root_solver()) << "Memory required for data: " << memory_used_ * sizeof(Dtype);
-  LOGI("Memory required for data: %d", memory_used_ * sizeof(Dtype));
   // For each layer, set up its input and output
   bottom_vecs_.resize(param.layer_size());
   top_vecs_.resize(param.layer_size());
@@ -96,19 +82,15 @@ void Net<Dtype>::Init(const NetParameter& in_param) {
   bottom_need_backward_.resize(param.layer_size());
   for (int layer_id = 0; layer_id < param.layer_size(); ++layer_id) {
     // For non-root solvers, whether this layer is shared from root_net_.
-    bool share_from_root = !Caffe::root_solver()
-        && root_net_->layers_[layer_id]->ShareInParallel();
+    // bool share_from_root = !Caffe::root_solver()
+    //    && root_net_->layers_[layer_id]->ShareInParallel();
     // Inherit phase from net if unset.
-    LOGI("Inherit phase from net if unset.");
     if (!param.layer(layer_id).has_phase()) {
       param.mutable_layer(layer_id)->set_phase(phase_);
     }
-    LOGI("setup layer.");
     // Setup layer.
     const LayerParameter& layer_param = param.layer(layer_id);
-    LOGI("Creating Layer %s", layer_param.name().c_str());
     layers_.push_back(LayerRegistry<Dtype>::CreateLayer(layer_param));
-    LOGI("Layer %s created", layer_param.name().c_str());
     layer_names_.push_back(layer_param.name());
     if (Caffe::root_solver()) {
       LOG(INFO) << "Creating Layer " << layer_param.name();
@@ -144,7 +126,6 @@ void Net<Dtype>::Init(const NetParameter& in_param) {
     // After this layer is connected, set it up.
     layers_[layer_id]->SetUp(bottom_vecs_[layer_id], top_vecs_[layer_id]);
     if (Caffe::root_solver()) {
-      LOGI("Setting up %s", layer_names_[layer_id].c_str());
       LOG(INFO) << "Setting up " << layer_names_[layer_id];
     }
     for (int top_id = 0; top_id < top_vecs_[layer_id].size(); ++top_id) {
@@ -165,7 +146,6 @@ void Net<Dtype>::Init(const NetParameter& in_param) {
     }
     if (Caffe::root_solver()) {
       DLOG(INFO) << "Memory required for data: " << memory_used_ * sizeof(Dtype);
-      LOGI("Memory required for data: %d", memory_used_ * sizeof(Dtype));
     }
     const int param_size = layer_param.param_size();
     const int num_param_blobs = layers_[layer_id]->blobs().size();
@@ -209,13 +189,10 @@ void Net<Dtype>::Init(const NetParameter& in_param) {
     if (Caffe::root_solver()) {
       if (layer_need_backward_[layer_id]) {
         LOG(INFO) << layer_names_[layer_id] << " needs backward computation.";
-        LOGI("%s needs backward computation.", layer_names_[layer_id].c_str());
       } else {
         LOG(INFO) << layer_names_[layer_id]
                   << " does not need backward computation.";
-        LOGI("%s does not need backward computation.", layer_names_[layer_id].c_str());
-          LOG(INFO) << layer_names_[layer_id] << " needs backward computation.";
-        }
+      }
     }
 
     for (int bottom_id = 0; bottom_id < bottom_vecs_[layer_id].size();
@@ -253,7 +230,6 @@ void Net<Dtype>::Init(const NetParameter& in_param) {
       it != available_blobs.end(); ++it) {
     if (Caffe::root_solver()) {
       LOG(INFO) << "This network produces output " << *it;
-      LOGI("This network produces output %s", (*it).c_str());
     }
     net_output_blobs_.push_back(blobs_[blob_name_to_idx[*it]].get());
     net_output_blob_indices_.push_back(blob_name_to_idx[*it]);
@@ -268,9 +244,7 @@ void Net<Dtype>::Init(const NetParameter& in_param) {
   debug_info_ = param.debug_info();
   if (Caffe::root_solver()) {
     LOG(INFO) << "Network initialization done.";
-    LOGI("Network initialization done.");
     LOG(INFO) << "Memory required for data: " << memory_used_ * sizeof(Dtype);
-    LOGI("Memory required for data: %d", memory_used_ * sizeof(Dtype));
   }
 }
 
@@ -861,6 +835,7 @@ void Net<Dtype>::CopyTrainedLayersFromBinaryProto(
 
 template <typename Dtype>
 void Net<Dtype>::CopyTrainedLayersFromHDF5(const string trained_filename) {
+  /*
   hid_t file_hid = H5Fopen(trained_filename.c_str(), H5F_ACC_RDONLY,
                            H5P_DEFAULT);
   CHECK_GE(file_hid, 0) << "Couldn't open " << trained_filename;
@@ -907,6 +882,7 @@ void Net<Dtype>::CopyTrainedLayersFromHDF5(const string trained_filename) {
   }
   H5Gclose(data_hid);
   H5Fclose(file_hid);
+  */
 }
 
 template <typename Dtype>
@@ -923,9 +899,9 @@ void Net<Dtype>::ToProto(NetParameter* param, bool write_diff) const {
     layers_[i]->ToProto(layer_param, write_diff);
   }
 }
-
 template <typename Dtype>
 void Net<Dtype>::ToHDF5(const string& filename, bool write_diff) const {
+/*
   hid_t file_hid = H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT,
       H5P_DEFAULT);
   CHECK_GE(file_hid, 0)
@@ -979,6 +955,7 @@ void Net<Dtype>::ToHDF5(const string& filename, bool write_diff) const {
     H5Gclose(diff_hid);
   }
   H5Fclose(file_hid);
+*/
 }
 
 template <typename Dtype>
@@ -1049,7 +1026,6 @@ const shared_ptr<Layer<Dtype> > Net<Dtype>::layer_by_name(
     layer_ptr = layers_[layer_names_index_.find(layer_name)->second];
   } else {
     layer_ptr.reset((Layer<Dtype>*)(NULL));
-    LOGW("Unknown layer name: %s", layer_name.c_str());
     LOG(WARNING) << "Unknown layer name " << layer_name;
   }
   return layer_ptr;

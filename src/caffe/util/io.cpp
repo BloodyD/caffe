@@ -17,14 +17,6 @@
 #include "caffe/proto/caffe.pb.h"
 #include "caffe/util/io.hpp"
 
-#include <android/log.h>
-#define TAG "CaffeAndroid"
-#define LOGV(...) __android_log_print(ANDROID_LOG_VERBOSE, TAG, __VA_ARGS__)
-#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG  , TAG, __VA_ARGS__)
-#define LOGI(...) __android_log_print(ANDROID_LOG_INFO   , TAG, __VA_ARGS__)
-#define LOGW(...) __android_log_print(ANDROID_LOG_WARN   , TAG, __VA_ARGS__)
-#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR  , TAG, __VA_ARGS__)
-
 const int kProtoReadBytesLimit = INT_MAX;  // Max size of 2 GB minus 1 byte.
 
 namespace caffe {
@@ -39,12 +31,9 @@ using google::protobuf::Message;
 
 bool ReadProtoFromTextFile(const char* filename, Message* proto) {
   int fd = open(filename, O_RDONLY);
-  if(fd == -1)
-    LOGE("File not found: %s", filename);
   CHECK_NE(fd, -1) << "File not found: " << filename;
   FileInputStream* input = new FileInputStream(fd);
   bool success = google::protobuf::TextFormat::Parse(input, proto);
-  LOGI("protobuf parse successfully: %d", success);
   delete input;
   close(fd);
   return success;
@@ -215,28 +204,18 @@ bool DecodeDatum(Datum* datum, bool is_color) {
 }
 
 void CVMatToDatum(const cv::Mat& cv_img, Datum* datum) {
-  if(cv_img.depth() != CV_8U)
-    LOGE("Image data type must be unsigned byte");
   CHECK(cv_img.depth() == CV_8U) << "Image data type must be unsigned byte";
-  LOGI("img: %dx%dx%d", cv_img.rows, cv_img.cols, cv_img.channels());
-  LOGI("set_channels");
   datum->set_channels(cv_img.channels());
-  LOGI("set_height");
   datum->set_height(cv_img.rows);
-  LOGI("set_width");
   datum->set_width(cv_img.cols);
-  LOGI("clear_data");
   datum->clear_data();
-  LOGI("clear_float_data");
   datum->clear_float_data();
-  LOGI("set_encoded");
   datum->set_encoded(false);
   int datum_channels = datum->channels();
   int datum_height = datum->height();
   int datum_width = datum->width();
   int datum_size = datum_channels * datum_height * datum_width;
   std::string buffer(datum_size, ' ');
-  LOGI("Copy data to buffer");
   for (int h = 0; h < datum_height; ++h) {
     const uchar* ptr = cv_img.ptr<uchar>(h);
     int img_index = 0;
@@ -247,10 +226,7 @@ void CVMatToDatum(const cv::Mat& cv_img, Datum* datum) {
       }
     }
   }
-  LOGI("setting data");
-  LOGI("%d", buffer.length());
   datum->set_data(buffer);
-  LOGI("datum ready");
 }
 
 }  // namespace caffe
