@@ -18,9 +18,9 @@ if (NOT __GLOG_INCLUDED)
 
     # we build glog statically, but want to link it into the caffe shared library
     # this requires position-independent code
-    if (UNIX)
       set(GLOG_EXTRA_COMPILER_FLAGS "-fPIC")
-    endif()
+    # if (UNIX)
+    # endif()
 
     set(GLOG_CXX_FLAGS ${CMAKE_CXX_FLAGS} ${GLOG_EXTRA_COMPILER_FLAGS})
     set(GLOG_C_FLAGS ${CMAKE_C_FLAGS} ${GLOG_EXTRA_COMPILER_FLAGS})

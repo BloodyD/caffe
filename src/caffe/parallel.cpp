@@ -1,10 +1,11 @@
 #ifndef CPU_ONLY
 #include <cuda_runtime.h>
 #endif
+#include "caffe/caffe.hpp"
 #include <glog/logging.h>
 #include <stdio.h>
-#include <sys/ioctl.h>
-#include <sys/mman.h>
+//#include <sys/ioctl.h>
+//#include <sys/mman.h>
 #include <sys/stat.h>
 
 #include <cstdlib>
@@ -13,7 +14,6 @@
 #include <vector>
 
 #include "boost/thread.hpp"
-#include "caffe/caffe.hpp"
 #include "caffe/parallel.hpp"
 
 namespace caffe {

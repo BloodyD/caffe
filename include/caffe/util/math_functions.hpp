@@ -4,11 +4,20 @@
 #include <stdint.h>
 #include <cmath>  // for std::fabs and std::signbit
 
+#include "caffe/common.hpp"
 #include "glog/logging.h"
 
-#include "caffe/common.hpp"
 #include "caffe/util/device_alternate.hpp"
 #include "caffe/util/mkl_alternate.hpp"
+
+#define _MIN(a,b) (((a)<(b))?(a):(b))
+#define _MAX(a,b) (((a)>(b))?(a):(b))
+
+#ifdef _WIN32
+#  include <intrin.h>
+#  define __builtin_popcount __popcnt
+#  define __builtin_popcountl __popcnt
+#endif
 
 namespace caffe {
 

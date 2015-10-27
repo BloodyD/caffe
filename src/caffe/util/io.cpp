@@ -1,3 +1,4 @@
+#include "caffe/common.hpp"
 #include <fcntl.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
@@ -13,9 +14,12 @@
 #include <string>
 #include <vector>
 
-#include "caffe/common.hpp"
 #include "caffe/proto/caffe.pb.h"
 #include "caffe/util/io.hpp"
+
+#ifdef _WIN32
+#include <io.h>
+#endif
 
 const int kProtoReadBytesLimit = INT_MAX;  // Max size of 2 GB minus 1 byte.
 

@@ -3,6 +3,7 @@
 namespace bp = boost::python;
 #endif
 
+#include "caffe/caffe.hpp"
 #include <glog/logging.h>
 
 #include <cstring>
@@ -11,7 +12,6 @@ namespace bp = boost::python;
 #include <vector>
 
 #include "boost/algorithm/string.hpp"
-#include "caffe/caffe.hpp"
 #include "caffe/util/signal_handler.h"
 
 using caffe::Blob;

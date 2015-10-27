@@ -3,6 +3,8 @@
 
 #include <boost/shared_ptr.hpp>
 #include <gflags/gflags.h>
+
+#define off_t _off_t
 #include <glog/logging.h>
 
 #include <climits>
@@ -77,8 +79,8 @@ using boost::shared_ptr;
 // Common functions and classes from std that caffe often uses.
 using std::fstream;
 using std::ios;
-using std::isnan;
-using std::isinf;
+//using std::isnan;
+//using std::isinf;
 using std::iterator;
 using std::make_pair;
 using std::map;
@@ -150,11 +152,18 @@ class Caffe {
   // Prints the current GPU status.
   static void DeviceQuery();
   // Parallel training info
-  inline static int solver_count() { return Get().solver_count_; }
-  inline static void set_solver_count(int val) { Get().solver_count_ = val; }
-  inline static bool root_solver() { return Get().root_solver_; }
-  inline static void set_root_solver(bool val) { Get().root_solver_ = val; }
-
+  static int solver_count() {
+	  return Get().solver_count_;
+  }
+  static void set_solver_count(int val) {
+	  Get().solver_count_ = val;
+  }
+  static bool root_solver() { 
+	  return Get().root_solver_; 
+  }
+  static void set_root_solver(bool val) {
+	  Get().root_solver_ = val;
+  }
  protected:
 #ifndef CPU_ONLY
   cublasHandle_t cublas_handle_;
@@ -164,7 +173,7 @@ class Caffe {
 
   Brew mode_;
   int solver_count_;
-  bool root_solver_;
+  bool root_solver_ = true;
 
  private:
   // The private constructor to avoid duplicate instantiation.

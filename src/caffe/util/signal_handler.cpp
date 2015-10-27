@@ -1,8 +1,13 @@
 #include <boost/bind.hpp>
+#include "caffe/common.hpp"
 #include <glog/logging.h>
 
 #include <signal.h>
 #include <csignal>
+
+#ifndef SIGHUP
+#define SIGHUP 1
+#endif
 
 #include "caffe/util/signal_handler.h"
 
@@ -27,7 +32,7 @@ namespace {
       LOG(FATAL) << "Tried to hookup signal handlers more than once.";
     }
     already_hooked_up = true;
-
+/*
     struct sigaction sa;
     // Setup the handler
     sa.sa_handler = &handle_signal;
@@ -41,13 +46,14 @@ namespace {
     }
     if (sigaction(SIGINT, &sa, NULL) == -1) {
       LOG(FATAL) << "Cannot install SIGINT handler.";
-    }
+    }*/
+    LOG(ERROR) << "NOT IMPLEMENTED HERE";
   }
 
   // Set the signal handlers to the default.
   void UnhookHandler() {
     if (already_hooked_up) {
-      struct sigaction sa;
+  /*    struct sigaction sa;
       // Setup the sighub handler
       sa.sa_handler = SIG_DFL;
       // Restart the system call, if at all possible
@@ -61,7 +67,8 @@ namespace {
       if (sigaction(SIGINT, &sa, NULL) == -1) {
         LOG(FATAL) << "Cannot uninstall SIGINT handler.";
       }
-
+*/
+      LOG(ERROR) << "NOT IMPLEMENTED HERE";
       already_hooked_up = false;
     }
   }

@@ -1,10 +1,10 @@
 #include <boost/thread.hpp>
+#include "caffe/common.hpp"
 #include <glog/logging.h>
 #include <cmath>
 #include <cstdio>
 #include <ctime>
 
-#include "caffe/common.hpp"
 #include "caffe/util/rng.hpp"
 
 namespace caffe {
@@ -33,7 +33,7 @@ int64_t cluster_seedgen(void) {
   if (f)
     fclose(f);
 
-  pid = getpid();
+  pid = 1001; //getpid():
   s = time(NULL);
   seed = std::abs(((s * 181) * ((pid - 83) * 359)) % 104729);
   return seed;
@@ -46,14 +46,14 @@ void GlobalInit(int* pargc, char*** pargv) {
   // Google logging.
   ::google::InitGoogleLogging(*(pargv)[0]);
   // Provide a backtrace on segfault.
-  ::google::InstallFailureSignalHandler();
+  //::google::InstallFailureSignalHandler();
 }
 
 #ifdef CPU_ONLY  // CPU-only Caffe.
 
 Caffe::Caffe()
-    : random_generator_(), mode_(Caffe::CPU),
-      solver_count_(1), root_solver_(true) { }
+    : random_generator_(), mode_(Caffe::CPU), solver_count_(1), root_solver_(true){ 
+}
 
 Caffe::~Caffe() { }
 

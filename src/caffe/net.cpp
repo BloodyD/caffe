@@ -17,7 +17,6 @@
 #include "caffe/util/math_functions.hpp"
 #include "caffe/util/upgrade_proto.hpp"
 
-#include "caffe/test/test_caffe_main.hpp"
 
 namespace caffe {
 
@@ -38,8 +37,9 @@ Net<Dtype>::Net(const string& param_file, Phase phase, const Net* root_net)
 
 template <typename Dtype>
 void Net<Dtype>::Init(const NetParameter& in_param) {
-  CHECK(Caffe::root_solver() || root_net_)
-      << "root_net_ needs to be set for all non-root solvers";
+	bool is_root = Caffe::root_solver();
+	bool has_root = root_net_;
+  CHECK(is_root || has_root) << "root_net_ needs to be set for all non-root solvers";
   // Set phase from the state.
   phase_ = in_param.state().phase();
   // Filter layers based on their include/exclude rules and
