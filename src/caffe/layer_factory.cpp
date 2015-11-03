@@ -16,6 +16,13 @@
 
 namespace caffe {
 
+	void InitRegisterers(){
+	
+		InitMemoryDataRegisterers();
+		InitInnerProductRegisterers();
+	}
+
+
 // Get convolution layer according to engine.
 template <typename Dtype>
 shared_ptr<Layer<Dtype> > GetConvolutionLayer(
@@ -37,6 +44,7 @@ shared_ptr<Layer<Dtype> > GetConvolutionLayer(
     LOG(FATAL) << "Layer " << param.name() << " has unknown engine.";
   }
 }
+
 
 REGISTER_LAYER_CREATOR(Convolution, GetConvolutionLayer);
 

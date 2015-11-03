@@ -15,7 +15,6 @@
 #include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
-
 /**
  * @brief Abstract base class that factors out the BLAS code common to
  *        ConvolutionLayer and DeconvolutionLayer.

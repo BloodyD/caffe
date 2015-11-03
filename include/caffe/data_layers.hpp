@@ -19,7 +19,6 @@
 #include "caffe/util/db.hpp"
 
 namespace caffe {
-
 /**
  * @brief Provides base for data layers that feed blobs to the Net.
  *

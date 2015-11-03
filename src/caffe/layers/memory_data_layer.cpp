@@ -7,6 +7,7 @@
 #include "caffe/util/io.hpp"
 
 namespace caffe {
+	void InitMemoryDataRegisterers(){}
 
 template <typename Dtype>
 void MemoryDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
@@ -115,7 +116,8 @@ void MemoryDataLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     has_new_data_ = false;
 }
 
-INSTANTIATE_CLASS(MemoryDataLayer);
-REGISTER_LAYER_CLASS(MemoryData);
+	INSTANTIATE_CLASS(MemoryDataLayer);
+	REGISTER_LAYER_CLASS(MemoryData);
+
 
 }  // namespace caffe

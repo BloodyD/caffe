@@ -19,6 +19,9 @@ namespace boost { class mutex; }
 
 namespace caffe {
 
+	void InitInnerProductRegisterers();
+	void InitMemoryDataRegisterers();
+
 /**
  * @brief An interface for the units of computation which can be composed into a
  *        Net.
@@ -31,7 +34,8 @@ namespace caffe {
  */
 template <typename Dtype>
 class Layer {
- public:
+public:
+	
   /**
    * You should not implement your own constructor. Any set up code should go
    * to SetUp(), where the dimensions of the bottom blobs are provided to the

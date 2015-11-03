@@ -3,6 +3,7 @@
 #include <glog/logging.h>
 #include <cmath>
 #include <cstdio>
+#include <iostream>
 #include <ctime>
 
 #include "caffe/util/rng.hpp"
@@ -10,11 +11,12 @@
 namespace caffe {
 
 // Make sure each thread can have different values.
-static boost::thread_specific_ptr<Caffe> thread_instance_;
+// static boost::thread_specific_ptr<Caffe> thread_instance_;
+	static boost::shared_ptr<Caffe> thread_instance_;
 
 Caffe& Caffe::Get() {
   if (!thread_instance_.get()) {
-    thread_instance_.reset(new Caffe());
+    thread_instance_.reset(new Caffe);
   }
   return *(thread_instance_.get());
 }
@@ -52,7 +54,13 @@ void GlobalInit(int* pargc, char*** pargv) {
 #ifdef CPU_ONLY  // CPU-only Caffe.
 
 Caffe::Caffe()
-    : random_generator_(), mode_(Caffe::CPU), solver_count_(1), root_solver_(true){ 
+    : random_generator_(){
+	Caffe *cf1 = this;
+	this->mode_ = Caffe::CPU;
+	this->solver_count_ = 1;
+	this->root_solver_ = true;
+	Caffe *cf2 = this;
+      std::cout << "Here" << std::endl;
 }
 
 Caffe::~Caffe() { }

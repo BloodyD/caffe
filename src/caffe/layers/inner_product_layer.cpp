@@ -8,6 +8,7 @@
 #include "caffe/vision_layers.hpp"
 
 namespace caffe {
+	void InitInnerProductRegisterers(){}
 
 template <typename Dtype>
 void InnerProductLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,

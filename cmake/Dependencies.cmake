@@ -30,9 +30,9 @@ include(cmake/ProtoBuf.cmake)
 # find_package(HDF5 COMPONENTS HL REQUIRED)
 # include_directories(SYSTEM ${HDF5_INCLUDE_DIRS} ${HDF5_HL_INCLUDE_DIR})
 # list(APPEND Caffe_LINKER_LIBS ${HDF5_LIBRARIES})
-include_directories(SYSTEM C:/dev/install/include)
-list(APPEND Caffe_LINKER_LIBS C:/dev/install/lib/libhdf5_hl.lib)
-list(APPEND Caffe_LINKER_LIBS C:/dev/install/lib/libhdf5.lib)
+include_directories(SYSTEM C:/dev/install/hdf5/include)
+list(APPEND Caffe_LINKER_LIBS C:/dev/install/hdf5/lib/libhdf5_hl_D.lib)
+list(APPEND Caffe_LINKER_LIBS C:/dev/install/hdf5/lib/libhdf5_D.lib)
 
 # ---[ LMDB
 find_package(LMDB REQUIRED)

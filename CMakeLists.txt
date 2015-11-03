@@ -34,7 +34,7 @@ endif()
 
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 add_definitions(-DUSE_EIGEN -D_SCL_SECURE_NO_WARNINGS)
-include_directories(C:/dev/install/include/eigen3)
+include_directories(C:/dev/install/eigen/include/eigen3)
 
 if(USE_libstdcpp)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libstdc++")
