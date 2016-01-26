@@ -1,11 +1,9 @@
-#include <algorithm>
 #include <vector>
 
-#include <boost\math\special_functions.hpp>
-
+#include <boost/math/special_functions.hpp>
 #include "caffe/layer.hpp"
+#include "caffe/layers/exp_layer.hpp"
 #include "caffe/util/math_functions.hpp"
-#include "caffe/vision_layers.hpp"
 
 namespace caffe {
 
