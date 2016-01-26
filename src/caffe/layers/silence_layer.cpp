@@ -5,6 +5,8 @@
 #include "caffe/util/math_functions.hpp"
 
 namespace caffe {
+	void InitSilenceRegisterers(){}
+
 
 template <typename Dtype>
 void SilenceLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,

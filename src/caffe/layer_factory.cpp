@@ -20,6 +20,14 @@ namespace caffe {
 	
 		InitMemoryDataRegisterers();
 		InitInnerProductRegisterers();
+		InitDropoutRegisterers();
+		InitArgMaxRegisterers();
+		InitSoftMaxRegisterers();
+		InitSliceRegisterers();
+		InitSilenceRegisterers();
+		InitSplitRegisterers();
+		InitConcatRegisterers();
+
 	}
 
 

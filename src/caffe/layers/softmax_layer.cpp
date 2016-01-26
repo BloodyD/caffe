@@ -6,6 +6,7 @@
 #include "caffe/vision_layers.hpp"
 
 namespace caffe {
+	void InitSoftMaxRegisterers(){}
 
 template <typename Dtype>
 void SoftmaxLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,

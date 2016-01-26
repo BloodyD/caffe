@@ -6,6 +6,7 @@
 #include "caffe/vision_layers.hpp"
 
 namespace caffe {
+	void InitSliceRegisterers(){}
 
 template <typename Dtype>
 void SliceLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,

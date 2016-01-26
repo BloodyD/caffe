@@ -8,6 +8,8 @@
 
 namespace caffe {
 
+	void InitArgMaxRegisterers(){}
+
 template <typename Dtype>
 void ArgMaxLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {

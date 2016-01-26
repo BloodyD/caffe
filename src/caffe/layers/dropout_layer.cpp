@@ -9,6 +9,7 @@
 #include "caffe/vision_layers.hpp"
 
 namespace caffe {
+	void InitDropoutRegisterers(){}
 
 template <typename Dtype>
 void DropoutLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,

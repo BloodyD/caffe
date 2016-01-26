@@ -5,6 +5,7 @@
 #include "caffe/vision_layers.hpp"
 
 namespace caffe {
+	void InitSplitRegisterers(){}
 
 template <typename Dtype>
 void SplitLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,

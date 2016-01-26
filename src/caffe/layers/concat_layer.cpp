@@ -6,6 +6,8 @@
 
 namespace caffe {
 
+	void InitConcatRegisterers(){}
+
 template <typename Dtype>
 void ConcatLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {

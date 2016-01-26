@@ -60,7 +60,6 @@ Caffe::Caffe()
 	this->solver_count_ = 1;
 	this->root_solver_ = true;
 	Caffe *cf2 = this;
-      std::cout << "Here" << std::endl;
 }
 
 Caffe::~Caffe() { }

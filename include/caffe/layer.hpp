@@ -21,6 +21,13 @@ namespace caffe {
 
 	void InitInnerProductRegisterers();
 	void InitMemoryDataRegisterers();
+	void InitArgMaxRegisterers();
+	void InitSoftMaxRegisterers();
+	void InitDropoutRegisterers();
+	void InitSliceRegisterers();
+	void InitSilenceRegisterers();
+	void InitSplitRegisterers();
+	void InitConcatRegisterers();
 
 /**
  * @brief An interface for the units of computation which can be composed into a

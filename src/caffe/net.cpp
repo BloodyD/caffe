@@ -51,10 +51,10 @@ void Net<Dtype>::Init(const NetParameter& in_param) {
   // the current NetState.
   NetParameter filtered_param;
   FilterNet(in_param, &filtered_param);
-  if (Caffe::root_solver()) {
+  /*if (Caffe::root_solver()) {
     LOG(INFO) << "Initializing net from parameters: " << std::endl
               << filtered_param.DebugString();
-  }
+  }*/
   // Create a copy of filtered_param with splits added where necessary.
   NetParameter param;
   InsertSplits(filtered_param, &param);
@@ -111,9 +111,9 @@ void Net<Dtype>::Init(const NetParameter& in_param) {
       layers_.push_back(LayerRegistry<Dtype>::CreateLayer(layer_param));
     }
     layer_names_.push_back(layer_param.name());
-    if (Caffe::root_solver()) {
-      LOG(INFO) << "Creating Layer " << layer_param.name();
-    }
+    //if (Caffe::root_solver()) {
+    //  LOG(INFO) << "Creating Layer " << layer_param.name();
+    //}
     bool need_backward = false;
 
     // Figure out this layer's input and output
@@ -156,9 +156,9 @@ void Net<Dtype>::Init(const NetParameter& in_param) {
     } else {
       layers_[layer_id]->SetUp(bottom_vecs_[layer_id], top_vecs_[layer_id]);
     }
-    if (Caffe::root_solver()) {
-      LOG(INFO) << "Setting up " << layer_names_[layer_id];
-    }
+    //if (Caffe::root_solver()) {
+    //  LOG(INFO) << "Setting up " << layer_names_[layer_id];
+    //}
     for (int top_id = 0; top_id < top_vecs_[layer_id].size(); ++top_id) {
       if (blob_loss_weights_.size() <= top_id_vecs_[layer_id][top_id]) {
         blob_loss_weights_.resize(top_id_vecs_[layer_id][top_id] + 1, Dtype(0));
@@ -236,16 +236,16 @@ void Net<Dtype>::Init(const NetParameter& in_param) {
       }
     }
     if (!layer_contributes_loss) { layer_need_backward_[layer_id] = false; }
-    if (layer_need_backward_[layer_id]) {
-      if (Caffe::root_solver()) {
-        LOG(INFO) << layer_names_[layer_id] << " needs backward computation.";
-      }
-    } else {
-      if (Caffe::root_solver()) {
-        LOG(INFO) << layer_names_[layer_id]
-                  << " does not need backward computation.";
-      }
-    }
+    //if (layer_need_backward_[layer_id]) {
+    //  if (Caffe::root_solver()) {
+    //    LOG(INFO) << layer_names_[layer_id] << " needs backward computation.";
+    //  }
+    //} else {
+    //  if (Caffe::root_solver()) {
+    //    LOG(INFO) << layer_names_[layer_id]
+    //              << " does not need backward computation.";
+    //  }
+    //}
     for (int bottom_id = 0; bottom_id < bottom_vecs_[layer_id].size();
          ++bottom_id) {
       if (layer_contributes_loss) {
@@ -433,13 +433,13 @@ void Net<Dtype>::AppendTop(const NetParameter& param, const int layer_id,
                << "' produced by multiple sources.";
   } else {
     // Normal output.
-    if (Caffe::root_solver()) {
-      if (layer_param) {
-        LOG(INFO) << layer_param->name() << " -> " << blob_name;
-      } else {
-        LOG(INFO) << "Input " << top_id << " -> " << blob_name;
-      }
-    }
+    //if (Caffe::root_solver()) {
+    //  if (layer_param) {
+    //    LOG(INFO) << layer_param->name() << " -> " << blob_name;
+    //  } else {
+    //    LOG(INFO) << "Input " << top_id << " -> " << blob_name;
+    //  }
+    //}
     shared_ptr<Blob<Dtype> > blob_pointer(new Blob<Dtype>());
     const int blob_id = blobs_.size();
     blobs_.push_back(blob_pointer);
@@ -478,9 +478,9 @@ int Net<Dtype>::AppendBottom(const NetParameter& param, const int layer_id,
                << layer_param.name() << "', bottom index " << bottom_id << ")";
   }
   const int blob_id = (*blob_name_to_idx)[blob_name];
-  if (Caffe::root_solver()) {
-    LOG(INFO) << layer_names_[layer_id] << " <- " << blob_name;
-  }
+  //if (Caffe::root_solver()) {
+  //  LOG(INFO) << layer_names_[layer_id] << " <- " << blob_name;
+  //}
   bottom_vecs_[layer_id].push_back(blobs_[blob_id].get());
   bottom_id_vecs_[layer_id].push_back(blob_id);
   available_blobs->erase(blob_name);
