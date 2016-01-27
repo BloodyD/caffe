@@ -28,6 +28,7 @@ namespace caffe {
 	void InitSilenceRegisterers();
 	void InitSplitRegisterers();
 	void InitConcatRegisterers();
+	void InitBatchNormRegisterers();
 
 /**
  * @brief An interface for the units of computation which can be composed into a

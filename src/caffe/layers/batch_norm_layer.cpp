@@ -5,7 +5,7 @@
 #include "caffe/util/math_functions.hpp"
 
 namespace caffe {
-
+	void InitBatchNormRegisterers(){}
 template <typename Dtype>
 void BatchNormLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {

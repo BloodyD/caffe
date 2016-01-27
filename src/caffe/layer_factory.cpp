@@ -44,6 +44,7 @@ namespace caffe {
 		InitSilenceRegisterers();
 		InitSplitRegisterers();
 		InitConcatRegisterers();
+		InitBatchNormRegisterers();
 
 	}
 
